@@ -145,18 +145,21 @@
 
 	function renderTextures()
 	{
+		scene.remove(mesh);
+
+		const boxGeometry = new THREE.BoxBufferGeometry(2, 2, 2);
 		const loader = new THREE.TextureLoader();
 
 		const materials = [
 			new THREE.MeshBasicMaterial({map: loader.load('https://res-3.cloudinary.com/crunchbase-production/image/upload/c_lpad,f_auto,q_auto:eco/taqpepcwzincpeytldot')}), //front right
-			new THREE.MeshBasicMaterial({map: loader.load('https://cdn.vox-cdn.com/thumbor/wQooBXM6ZRWVCkdI6W_KgDR1sjc=/0x0:1920x1200/1400x1400/filters:focal(1313x531:1619x837):format(jpeg)/cdn.vox-cdn.com/uploads/chorus_image/image/53947575/reinhammer.0.jpg')}), // back left
+			new THREE.MeshBasicMaterial({map: loader.load('https://static.wikia.nocookie.net/haikyuu/images/a/a1/Haikyuu_Poster.png/revision/latest/top-crop/width/220/height/220?cb=20140326213635')}), // back left
 			new THREE.MeshBasicMaterial({map: loader.load('https://yt3.ggpht.com/ytc/AAUvwnifzf0a9h5PmkSSSEh_In8dRZasxvcdRpSQ2wM5SA=s900-c-k-c0x00ffffff-no-rj')}), // top
-			new THREE.MeshBasicMaterial({map: loader.load('https://static.wikia.nocookie.net/haikyuu/images/a/a1/Haikyuu_Poster.png/revision/latest/top-crop/width/220/height/220?cb=20140326213635')}), // bottom
+			new THREE.MeshBasicMaterial({map: loader.load('https://cdn.vox-cdn.com/thumbor/wQooBXM6ZRWVCkdI6W_KgDR1sjc=/0x0:1920x1200/1400x1400/filters:focal(1313x531:1619x837):format(jpeg)/cdn.vox-cdn.com/uploads/chorus_image/image/53947575/reinhammer.0.jpg')}), // bottom
 			new THREE.MeshBasicMaterial({map: loader.load('https://i1.sndcdn.com/artworks-000118414405-0c9zmf-t500x500.jpg')}),// front left
 			new THREE.MeshBasicMaterial({map: loader.load('https://cdn1.i-scmp.com/sites/default/files/styles/768x768/public/images/methode/2018/12/28/f137ab00-0996-11e9-8e9f-24e0f03e43a7_image_hires_175807.jpg?itok=4dAlR0QI&v=1545991093')}), // back right
 		];
 
-		mesh = new THREE.Mesh(geometry, materials);
+		mesh = new THREE.Mesh(boxGeometry, materials);
 
 		scene.add(mesh);
 	}
@@ -177,12 +180,14 @@
 
 		// Adding a material to make the vertices visible
 		// Points material only shows the points which in our case are 8 vertices
-		const material = new THREE.PointsMaterial({color: 0x0000ff, size: 0.5});
+		const material = new THREE.PointsMaterial({color: 0x0000ff, size: 0.1});
+		const bunnyMaterial = new THREE.PointsMaterial({color: 0x00ff00, size: 0.01});
+		var bunny = new THREE.Mesh(bunnyObject.geometry, bunnyMaterial);
 		mesh = new THREE.Points(geometry, material);
 
 		// Add the mesh back in the scene
 		scene.add(mesh);
-		scene.add(bunnyObject);
+		scene.add(bunny);
 	}
 
 	function loadCubeJustEdges()
@@ -225,8 +230,7 @@
 				'http://192.168.1.132:8000/bunny-5000.obj',
 				// called when resource is loaded
 				function ( object ) {
-					object.scale.set(0.5, 0.5, 0.5);
-					object.translateX(-0.5);
+					object.scale.set(0.3, 0.3, 0.3);
 
 					bunnyObject = object;
 
@@ -300,6 +304,10 @@
 				mesh.rotation.x = 0;
 				mesh.rotation.y = 0;
 				mesh.rotation.z = 0;
+
+				bunnyObject.rotation.x = 0;
+				bunnyObject.rotation.y = 0;
+				bunnyObject.rotation.z = 0;
 				break;
 
 			case 38: // arrow up
@@ -326,8 +334,9 @@
 				camera.translateZ(0.05);
 				break;
 
-			case 77: // m
-				camera.rotation.y += Math.PI / 180;
+			case 84: // t = render textures
+
+				renderTextures();
 		}
 	}
 </script>
