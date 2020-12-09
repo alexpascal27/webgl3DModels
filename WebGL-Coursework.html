@@ -19,13 +19,12 @@
 	// Global variables that are available in all functions.
 	// Note: You can add your own here, e.g. to store the rendering mode.
 	var camera, scene, renderer, mesh;
-	var geometry, bunnyObject;
+	var geometry, bunnyObject, bunnyMesh;
 
 	// Initialise the scene, and draw it for the first time.
 	init();
 	animate();
 
-	var whatever = new THREE.Spherical(10, )
 	// Listen for keyboard events, to react to them.
 	// Note: there are also other event listeners, e.g. for mouse events.
 	document.addEventListener('keydown', handleKeyDown);
@@ -114,6 +113,11 @@
 
 	function initXYZAxis()
 	{
+		var axisHelper = new THREE.AxesHelper(5);
+		scene.add(axisHelper);
+		/*
+		// Alternative way to draw the xyz axis
+
 		const range = 10;
 
 		// X-Axis which is red
@@ -143,6 +147,8 @@
 		scene.add(xAxisLine);
 		scene.add(yAxisLine);
 		scene.add(zAxisLine);
+
+		 */
 	}
 
 	function renderTextures()
@@ -151,16 +157,19 @@
 
 		const boxGeometry = new THREE.BoxBufferGeometry(2, 2, 2);
 		const loader = new THREE.TextureLoader();
+		const material = new THREE.MeshBasicMaterial({map: loader.load('https://cdn1.i-scmp.com/sites/default/files/styles/768x768/public/images/methode/2018/12/28/f137ab00-0996-11e9-8e9f-24e0f03e43a7_image_hires_175807.jpg?itok=4dAlR0QI&v=1545991093')});
 
 		const materials = [
 			new THREE.MeshBasicMaterial({map: loader.load('https://res-3.cloudinary.com/crunchbase-production/image/upload/c_lpad,f_auto,q_auto:eco/taqpepcwzincpeytldot')}), //front right
 			new THREE.MeshBasicMaterial({map: loader.load('https://static.wikia.nocookie.net/haikyuu/images/a/a1/Haikyuu_Poster.png/revision/latest/top-crop/width/220/height/220?cb=20140326213635')}), // back left
-			new THREE.MeshBasicMaterial({map: loader.load('https://yt3.ggpht.com/ytc/AAUvwnifzf0a9h5PmkSSSEh_In8dRZasxvcdRpSQ2wM5SA=s900-c-k-c0x00ffffff-no-rj')}), // top
+			new THREE.MeshBasicMaterial({map: loader.load('https://static.wikia.nocookie.net/leagueoflegends/images/8/8e/Kayn_Render.png/revision/latest/top-crop/width/360/height/360?cb=20181117175535')}), // top
 			new THREE.MeshBasicMaterial({map: loader.load('https://cdn.vox-cdn.com/thumbor/wQooBXM6ZRWVCkdI6W_KgDR1sjc=/0x0:1920x1200/1400x1400/filters:focal(1313x531:1619x837):format(jpeg)/cdn.vox-cdn.com/uploads/chorus_image/image/53947575/reinhammer.0.jpg')}), // bottom
 			new THREE.MeshBasicMaterial({map: loader.load('https://i1.sndcdn.com/artworks-000118414405-0c9zmf-t500x500.jpg')}),// front left
 			new THREE.MeshBasicMaterial({map: loader.load('https://cdn1.i-scmp.com/sites/default/files/styles/768x768/public/images/methode/2018/12/28/f137ab00-0996-11e9-8e9f-24e0f03e43a7_image_hires_175807.jpg?itok=4dAlR0QI&v=1545991093')}), // back right
 		];
 
+		// If we want to apply a single texture change the second parameter to the material variable
+		// Otherwise use materials variable
 		mesh = new THREE.Mesh(boxGeometry, materials);
 
 		scene.add(mesh);
@@ -178,46 +187,48 @@
 	{
 		// Remove the current mesh as we need to render a new mesh
 		scene.remove(mesh);
-		scene.remove(bunnyObject);
+		scene.remove(bunnyMesh);
 
 		// Adding a material to make the vertices visible
 		// Points material only shows the points which in our case are 8 vertices
-		const material = new THREE.PointsMaterial({color: 0x0000ff, size: 0.1});
-		const bunnyMaterial = new THREE.PointsMaterial({color: 0x00ff00, size: 0.01});
-		var bunny = new THREE.Mesh(bunnyObject.geometry, bunnyMaterial);
+		const material = new THREE.PointsMaterial({color: 0x00ff00, size: 0.1});
 		mesh = new THREE.Points(geometry, material);
+
+		const bunnyMaterial = new THREE.PointsMaterial({color: 0x00ff00, size: 0.01});
+		bunnyMesh = new THREE.Points(bunnyObject.children[0].geometry, bunnyMaterial);
+		// Adjust scale
+		bunnyMesh.scale.set(0.3, 0.3, 0.3);
 
 		// Add the mesh back in the scene
 		scene.add(mesh);
-		scene.add(bunny);
+		scene.add(bunnyMesh);
 	}
 
 	function loadCubeJustEdges()
 	{
 		// Remove the current mesh as we need to render a new mesh
 		scene.remove(mesh);
-		scene.remove(bunnyObject);
+		scene.remove(bunnyMesh);
 
 		// Adding a material to make the edges/wireframe visible
 		// The material is told only to show the wireframe of the geometry
-		const material = new THREE.MeshBasicMaterial({color: 0x0120FF, wireframe: true});
+		const material = new THREE.MeshBasicMaterial({color: 0x00ff00, wireframe: true});
 		mesh = new THREE.Mesh(geometry, material);
 
 		// Apply material to object
-		bunnyObject.traverse( function ( node ) {
-
-			if ( node.isMesh ) node.material = material;
-
-		} );
+		bunnyMesh = new THREE.Mesh(bunnyObject.children[0].geometry, material);
+		// Adjust scale
+		bunnyMesh.scale.set(0.3, 0.3, 0.3);
 
 		// Add the mesh back in the scene
 		scene.add(mesh);
-		scene.add(bunnyObject);
+		scene.add(bunnyMesh);
 	}
 
 	function loadCube()
 	{
 		scene.remove(mesh);
+		// Faces naturally render when you add the material
 		const material = new THREE.MeshBasicMaterial({color: 0x0120FF});
 		mesh = new THREE.Mesh(geometry, material);
 		scene.add(mesh);
@@ -225,18 +236,16 @@
 
 	function loadObject()
 	{
-		var loader = new THREE.OBJLoader();
+		const loader = new THREE.OBJLoader();
 		// load a resource
 		loader.load(
 				// resource URL
-				'http://192.168.1.132:8000/bunny-5000.obj',
+				'http://localhost:8000/bunny-5000.obj',
 				// called when resource is loaded
 				function ( object ) {
 					object.scale.set(0.3, 0.3, 0.3);
 
 					bunnyObject = object;
-
-					scene.add( object );
 
 				},
 				// called when loading is in progresses
@@ -290,26 +299,35 @@
 				// TO DO: add code for starting/stopping rotations (requirement 3).
 			case 88: // x = trigger rotating cube about x axis
 				mesh.rotation.x += 0.01;
-				bunnyObject.rotation.x += 0.01;
+				if(bunnyObject != null)
+				{
+					bunnyObject.rotation.x += 0.01;
+				}
+
 				break;
 
 			case 89: // y = trigger rotating cube about y axis
 				mesh.rotation.y += 0.01;
-				bunnyObject.rotation.y += 0.01;
+				if(bunnyObject != null) {
+					bunnyObject.rotation.y += 0.01;
+				}
 				break;
 			case 90: // z = trigger rotating cube about z axis
 				mesh.rotation.z += 0.01;
-				bunnyObject.rotation.z += 0.01;
+				if(bunnyObject != null) {
+					bunnyObject.rotation.z += 0.01;
+				}
 				break;
 
 			case 82: // r = reset rotation
 				mesh.rotation.x = 0;
 				mesh.rotation.y = 0;
 				mesh.rotation.z = 0;
-
-				bunnyObject.rotation.x = 0;
-				bunnyObject.rotation.y = 0;
-				bunnyObject.rotation.z = 0;
+				if(bunnyObject != null) {
+					bunnyObject.rotation.x = 0;
+					bunnyObject.rotation.y = 0;
+					bunnyObject.rotation.z = 0;
+				}
 				break;
 
 			case 38: // arrow up
