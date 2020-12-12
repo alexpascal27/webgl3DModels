@@ -51,7 +51,7 @@
 		initXYZAxis();
 
 		// Basic ambient lighting.
-		scene.add(new THREE.AmbientLight(0xffffff, 0.3));
+		scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 
 
 		// TO DO: add more complex lighting for 'face' rendering mode (requirement 4).
@@ -60,14 +60,13 @@
 		light.position.set( -1, 1, -10 );
 		scene.add( light );
 
-		const light2 = new THREE.PointLight( 0xffffff, 2, 1000000000);
-		light2.position.set( 0, 0, 0 );
-		scene.add( light2 );
-
 		loadOBJModel('http://localhost:8000/models/buggy/Buggy.obj','http://localhost:8000/models/buggy/Buggy.jpg', new THREE.Vector3(0.05, 0.05, 0.05), new THREE.Vector3(5, 0.8, -5));
 		loadOBJModel('http://localhost:8000/models/camp/Camp.obj','http://localhost:8000/models/camp/camp.jpg', new THREE.Vector3(0.005, 0.005, 0.005), new THREE.Vector3(5, 1, -2));
 		loadOBJModel('http://localhost:8000/bunny-5000.obj','http://localhost:8000/bunny-atlas.jpg', new THREE.Vector3(1, 1, 1), new THREE.Vector3(-5, 1, -2));
-		loadOBJMTLModel('http://localhost:8000/models/naruto/','Naruto.obj', 'Naruto.mtl',  new THREE.Vector3(0.5, 0.5, 0.5),  new THREE.Vector3(5, 0.8, -3))
+		loadOBJMTLModel('http://localhost:8000/models/naruto/','Naruto.obj', 'Naruto.mtl',  new THREE.Vector3(0.5, 0.5, 0.5),  new THREE.Vector3(5, 0.8, -3));
+		loadOBJMTLModel('http://localhost:8000/models/ship/','ship.obj', 'ship.mtl',  new THREE.Vector3(1, 1, 1),  new THREE.Vector3(10, -1, 10));
+
+		loadGround();
 
 		// Set up the Web GL renderer.
 		renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -293,6 +292,25 @@
 					console.log( 'An error happened' );
 				}
 		);
+	}
+
+	function loadGround()
+	{
+		// Set up a plane and apply the water texture to make it look like an ocean
+		let groundPlaneGeometry = new THREE.PlaneGeometry(100, 100 , 100, 100);
+
+		var textureLoader = new THREE.TextureLoader();
+		var map = textureLoader.load('http://localhost:8000/textures/water_texture.jpg');
+		let material = new THREE.MeshStandardMaterial({map: map});
+
+		let ground = new THREE.Mesh(groundPlaneGeometry, material);
+		ground.castShadow = true;
+		ground.receiveShadow = true;
+
+		ground.rotateX(-Math.PI / 2);
+		ground.position.y = -1;
+
+		scene.add(ground);
 	}
 
 	function loadOBJModel(url, textureUrl, scaleVector, translateVector)
