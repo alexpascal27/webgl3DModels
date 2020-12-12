@@ -62,9 +62,11 @@
 
 		loadOBJModel('http://localhost:8000/models/buggy/Buggy.obj','http://localhost:8000/models/buggy/Buggy.jpg', new THREE.Vector3(0.05, 0.05, 0.05), new THREE.Vector3(5, 0.8, -5));
 		loadOBJModel('http://localhost:8000/models/camp/Camp.obj','http://localhost:8000/models/camp/camp.jpg', new THREE.Vector3(0.005, 0.005, 0.005), new THREE.Vector3(5, 1, -2));
-		loadOBJModel('http://localhost:8000/bunny-5000.obj','http://localhost:8000/bunny-atlas.jpg', new THREE.Vector3(1, 1, 1), new THREE.Vector3(-5, 1, -2));
+		loadOBJModel('http://localhost:8000/models/dolphin/dolphin_jumping.obj', 'http://localhost:8000/models/dolphin/dolphin-tex.png',  new THREE.Vector3(2, 2, 2),  new THREE.Vector3(-10, -7, -10));
 		loadOBJMTLModel('http://localhost:8000/models/naruto/','Naruto.obj', 'Naruto.mtl',  new THREE.Vector3(0.5, 0.5, 0.5),  new THREE.Vector3(5, 0.8, -3));
 		loadOBJMTLModel('http://localhost:8000/models/ship/','ship.obj', 'ship.mtl',  new THREE.Vector3(1, 1, 1),  new THREE.Vector3(10, -1, 10));
+		loadOBJMTLModel('http://localhost:8000/models/tower_hut/','tower.obj', 'tower.mtl',  new THREE.Vector3(1.5, 1.5, 1.5),  new THREE.Vector3(-5, -1, -20));
+
 
 		loadGround();
 
@@ -247,8 +249,7 @@
 
 		// Adding a material to make the edges/wireframe visible
 		// The material is told only to show the wireframe of the geometry
-		const material = new THREE.MeshP
-		Material({color: 0x00ff00, wireframe: true});
+		const material = new THREE.MeshBasicMaterial({color: 0x00ff00, wireframe: true});
 		mesh = new THREE.Mesh(geometry, material);
 
 		// Apply material to object
@@ -266,7 +267,7 @@
 	{
 		scene.remove(mesh);
 		// Faces naturally render when you add the material
-		const material = new THREE.MeshPhongMaterial({color: 0x0120FF});
+		const material = new THREE.MeshBasicMaterial({color: 0x0120FF});
 		mesh = new THREE.Mesh(geometry, material);
 		scene.add(mesh);
 	}
