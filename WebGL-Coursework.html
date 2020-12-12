@@ -12,14 +12,19 @@
 <body>
 <script src="three.js"></script>
 <script src="OBJloader.js"></script>
-<script>
-
+<script src="scripts/controls.js"></script>
+<script src="scripts/OrbitControls.js"></script>
+<script type="module" src="http://localhost:8000/scripts/MTLLoader.js"></script>
+<script type="module">
 	"use strict"; // https://stackoverflow.com/q/1335851/72470
 
 	// Global variables that are available in all functions.
 	// Note: You can add your own here, e.g. to store the rendering mode.
+	import {MTLLoader} from 'http://localhost:8000/scripts/MTLLoader.js';
+
 	var camera, scene, renderer, mesh;
 	var geometry, bunnyObject, bunnyMesh;
+	var controls;
 
 	// Initialise the scene, and draw it for the first time.
 	init();
@@ -28,6 +33,8 @@
 	// Listen for keyboard events, to react to them.
 	// Note: there are also other event listeners, e.g. for mouse events.
 	document.addEventListener('keydown', handleKeyDown);
+	document.addEventListener('mousewheel', handleMouseWheel);
+	document.addEventListener('mousemove', handleMouseMovement);
 
 	// Scene initialisation. This function is only run once, at the very beginning.
 	function init()
@@ -44,9 +51,23 @@
 		initXYZAxis();
 
 		// Basic ambient lighting.
-		scene.add(new THREE.AmbientLight(0xffffff));
-		// TO DO: add more complex lighting for 'face' rendering mode (requirement 4).
+		scene.add(new THREE.AmbientLight(0xffffff, 0.3));
 
+
+		// TO DO: add more complex lighting for 'face' rendering mode (requirement 4).
+		const light = new THREE.PointLight( 0xffff00, 2, 1000000000);
+		light.castShadow = true;
+		light.position.set( -1, 1, -10 );
+		scene.add( light );
+
+		const light2 = new THREE.PointLight( 0xffffff, 2, 1000000000);
+		light2.position.set( 0, 0, 0 );
+		scene.add( light2 );
+
+		loadOBJModel('http://localhost:8000/models/buggy/Buggy.obj','http://localhost:8000/models/buggy/Buggy.jpg', new THREE.Vector3(0.05, 0.05, 0.05), new THREE.Vector3(5, 0.8, -5));
+		loadOBJModel('http://localhost:8000/models/camp/Camp.obj','http://localhost:8000/models/camp/camp.jpg', new THREE.Vector3(0.005, 0.005, 0.005), new THREE.Vector3(5, 1, -2));
+		loadOBJModel('http://localhost:8000/bunny-5000.obj','http://localhost:8000/bunny-atlas.jpg', new THREE.Vector3(1, 1, 1), new THREE.Vector3(-5, 1, -2));
+		loadOBJMTLModel('http://localhost:8000/models/naruto/','Naruto.obj', 'Naruto.mtl',  new THREE.Vector3(0.5, 0.5, 0.5),  new THREE.Vector3(5, 0.8, -3))
 
 		// Set up the Web GL renderer.
 		renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -54,8 +75,22 @@
 		renderer.setSize(window.innerWidth, window.innerHeight);
 		document.body.appendChild(renderer.domElement);
 
+		//Controls.addMouseHandler(renderer.domElement, orbit, zoomIn, zoomOut);
+		controls = new THREE.OrbitControls( camera, renderer.domElement );
+
+
 		// Handle resizing of the browser window.
 		window.addEventListener('resize', handleResize, false);
+	}
+
+	function zoomIn()
+	{
+		camera.translateZ(-0.1);
+	}
+
+	function zoomOut()
+	{
+		camera.translateZ(0.1);
 	}
 
 	function initCameraAndScene()
@@ -157,15 +192,15 @@
 
 		const boxGeometry = new THREE.BoxBufferGeometry(2, 2, 2);
 		const loader = new THREE.TextureLoader();
-		const material = new THREE.MeshBasicMaterial({map: loader.load('https://cdn1.i-scmp.com/sites/default/files/styles/768x768/public/images/methode/2018/12/28/f137ab00-0996-11e9-8e9f-24e0f03e43a7_image_hires_175807.jpg?itok=4dAlR0QI&v=1545991093')});
+		const material = new THREE.MeshPhongMaterial({map: loader.load('https://cdn1.i-scmp.com/sites/default/files/styles/768x768/public/images/methode/2018/12/28/f137ab00-0996-11e9-8e9f-24e0f03e43a7_image_hires_175807.jpg?itok=4dAlR0QI&v=1545991093')});
 
 		const materials = [
-			new THREE.MeshBasicMaterial({map: loader.load('https://res-3.cloudinary.com/crunchbase-production/image/upload/c_lpad,f_auto,q_auto:eco/taqpepcwzincpeytldot')}), //front right
-			new THREE.MeshBasicMaterial({map: loader.load('https://static.wikia.nocookie.net/haikyuu/images/a/a1/Haikyuu_Poster.png/revision/latest/top-crop/width/220/height/220?cb=20140326213635')}), // back left
-			new THREE.MeshBasicMaterial({map: loader.load('https://static.wikia.nocookie.net/leagueoflegends/images/8/8e/Kayn_Render.png/revision/latest/top-crop/width/360/height/360?cb=20181117175535')}), // top
-			new THREE.MeshBasicMaterial({map: loader.load('https://cdn.vox-cdn.com/thumbor/wQooBXM6ZRWVCkdI6W_KgDR1sjc=/0x0:1920x1200/1400x1400/filters:focal(1313x531:1619x837):format(jpeg)/cdn.vox-cdn.com/uploads/chorus_image/image/53947575/reinhammer.0.jpg')}), // bottom
-			new THREE.MeshBasicMaterial({map: loader.load('https://i1.sndcdn.com/artworks-000118414405-0c9zmf-t500x500.jpg')}),// front left
-			new THREE.MeshBasicMaterial({map: loader.load('https://cdn1.i-scmp.com/sites/default/files/styles/768x768/public/images/methode/2018/12/28/f137ab00-0996-11e9-8e9f-24e0f03e43a7_image_hires_175807.jpg?itok=4dAlR0QI&v=1545991093')}), // back right
+			new THREE.MeshPhongMaterial({map: loader.load('https://res-3.cloudinary.com/crunchbase-production/image/upload/c_lpad,f_auto,q_auto:eco/taqpepcwzincpeytldot')}), //front right
+			new THREE.MeshPhongMaterial({map: loader.load('https://static.wikia.nocookie.net/haikyuu/images/a/a1/Haikyuu_Poster.png/revision/latest/top-crop/width/220/height/220?cb=20140326213635')}), // back left
+			new THREE.MeshPhongMaterial({map: loader.load('https://yt3.ggpht.com/ytc/AAUvwnifzf0a9h5PmkSSSEh_In8dRZasxvcdRpSQ2wM5SA=s900-c-k-c0x00ffffff-no-rj')}), // top
+			new THREE.MeshPhongMaterial({map: loader.load('https://cdn.vox-cdn.com/thumbor/wQooBXM6ZRWVCkdI6W_KgDR1sjc=/0x0:1920x1200/1400x1400/filters:focal(1313x531:1619x837):format(jpeg)/cdn.vox-cdn.com/uploads/chorus_image/image/53947575/reinhammer.0.jpg')}), // bottom
+			new THREE.MeshPhongMaterial({map: loader.load('https://i1.sndcdn.com/artworks-000118414405-0c9zmf-t500x500.jpg')}),// front left
+			new THREE.MeshPhongMaterial({map: loader.load('https://cdn1.i-scmp.com/sites/default/files/styles/768x768/public/images/methode/2018/12/28/f137ab00-0996-11e9-8e9f-24e0f03e43a7_image_hires_175807.jpg?itok=4dAlR0QI&v=1545991093')}), // back right
 		];
 
 		// If we want to apply a single texture change the second parameter to the material variable
@@ -197,7 +232,8 @@
 		const bunnyMaterial = new THREE.PointsMaterial({color: 0x00ff00, size: 0.01});
 		bunnyMesh = new THREE.Points(bunnyObject.children[0].geometry, bunnyMaterial);
 		// Adjust scale
-		bunnyMesh.scale.set(0.3, 0.3, 0.3);
+		bunnyMesh.scale.set(0.4, 0.4, 0.4);
+		bunnyMesh.translateX(-0.4);
 
 		// Add the mesh back in the scene
 		scene.add(mesh);
@@ -212,13 +248,15 @@
 
 		// Adding a material to make the edges/wireframe visible
 		// The material is told only to show the wireframe of the geometry
-		const material = new THREE.MeshBasicMaterial({color: 0x00ff00, wireframe: true});
+		const material = new THREE.MeshP
+		Material({color: 0x00ff00, wireframe: true});
 		mesh = new THREE.Mesh(geometry, material);
 
 		// Apply material to object
 		bunnyMesh = new THREE.Mesh(bunnyObject.children[0].geometry, material);
 		// Adjust scale
-		bunnyMesh.scale.set(0.3, 0.3, 0.3);
+		bunnyMesh.scale.set(0.4, 0.4, 0.4);
+		bunnyMesh.translateX(-0.4);
 
 		// Add the mesh back in the scene
 		scene.add(mesh);
@@ -229,7 +267,7 @@
 	{
 		scene.remove(mesh);
 		// Faces naturally render when you add the material
-		const material = new THREE.MeshBasicMaterial({color: 0x0120FF});
+		const material = new THREE.MeshPhongMaterial({color: 0x0120FF});
 		mesh = new THREE.Mesh(geometry, material);
 		scene.add(mesh);
 	}
@@ -243,24 +281,90 @@
 				'http://localhost:8000/bunny-5000.obj',
 				// called when resource is loaded
 				function ( object ) {
-					object.scale.set(0.3, 0.3, 0.3);
-
 					bunnyObject = object;
-
+					bunnyMesh = object;
 				},
 				// called when loading is in progresses
 				function ( xhr ) {
-
 					console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-
 				},
 				// called when loading has errors
 				function ( error ) {
-
 					console.log( 'An error happened' );
-
 				}
 		);
+	}
+
+	function loadOBJModel(url, textureUrl, scaleVector, translateVector)
+	{
+		var material;
+
+		// load a resource
+		const loader = new THREE.OBJLoader();
+		loader.load(
+				// resource URL
+				url,
+				// called when resource is loaded
+				function ( object )
+				{
+					let objectMesh = object;
+					if(textureUrl != null)
+					{
+						var textureLoader = new THREE.TextureLoader();
+						var map = textureLoader.load(textureUrl);
+						material = new THREE.MeshPhongMaterial({map: map});
+						objectMesh = new THREE.Mesh(object.children[0].geometry, material);
+					}
+
+					if(scaleVector!=null) objectMesh.scale.set(scaleVector.x, scaleVector.y, scaleVector.z);
+					if(translateVector!=null) {
+						objectMesh.translateX(translateVector.x);
+						objectMesh.translateY(translateVector.y);
+						objectMesh.translateZ(translateVector.z);
+					}
+					scene.add(objectMesh);
+				},
+				// called when loading is in progresses
+				function ( xhr ) {
+					console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+				},
+				// called when loading has errors
+				function ( error ) {
+					console.log( 'An error happened' );
+				}
+		);
+	}
+
+	function loadOBJMTLModel(path, objURL, mtlURL,scaleVector, translateVector)
+	{
+
+		// initialise the loaders
+		var mtlLoader = new MTLLoader();
+		var objLoader = new THREE.OBJLoader();
+		mtlLoader.setPath(path);
+		objLoader.setPath(path);
+
+
+		mtlLoader.load(
+				// resource URL
+				mtlURL,
+				// called when resource is loaded
+				function ( materials )
+				{
+					materials.preload();
+
+					objLoader.setMaterials(materials);
+					objLoader.load(objURL, function (object) {
+						if(scaleVector!=null) object.scale.set(scaleVector.x, scaleVector.y, scaleVector.z);
+						if(translateVector!=null) {
+							object.translateX(translateVector.x);
+							object.translateY(translateVector.y);
+							object.translateZ(translateVector.z);
+						}
+
+						scene.add(object);
+					})
+				});
 	}
 
 	// Animation loop function. This function is called whenever an update is required.
@@ -269,9 +373,15 @@
 		requestAnimationFrame(animate);
 
 		// TO DO: This is a good place for code that rotates your cube (requirement 3).
-		//mesh.rotation.x += 0.005;
-		//mesh.rotation.y += 0.01;
-		//mesh.rotation.z += 0.2;
+		/*
+		mesh.rotation.x += 0.001;
+		mesh.rotation.y += 0.001;
+		mesh.rotation.z += 0.001;
+		orbit(0.0005, 0);
+
+		 */
+
+		controls.update();
 
 		// Render the current scene to the screen.
 		renderer.render(scene, camera);
@@ -299,35 +409,29 @@
 				// TO DO: add code for starting/stopping rotations (requirement 3).
 			case 88: // x = trigger rotating cube about x axis
 				mesh.rotation.x += 0.01;
-				if(bunnyObject != null)
-				{
-					bunnyObject.rotation.x += 0.01;
-				}
+				bunnyMesh.rotation.x += 0.01;
 
 				break;
 
 			case 89: // y = trigger rotating cube about y axis
 				mesh.rotation.y += 0.01;
-				if(bunnyObject != null) {
-					bunnyObject.rotation.y += 0.01;
-				}
+				bunnyMesh.rotation.y += 0.01;
+
 				break;
 			case 90: // z = trigger rotating cube about z axis
 				mesh.rotation.z += 0.01;
-				if(bunnyObject != null) {
-					bunnyObject.rotation.z += 0.01;
-				}
+				bunnyMesh.rotation.z += 0.01;
 				break;
 
 			case 82: // r = reset rotation
 				mesh.rotation.x = 0;
 				mesh.rotation.y = 0;
 				mesh.rotation.z = 0;
-				if(bunnyObject != null) {
-					bunnyObject.rotation.x = 0;
-					bunnyObject.rotation.y = 0;
-					bunnyObject.rotation.z = 0;
-				}
+
+				bunnyMesh.rotation.x = 0;
+				bunnyMesh.rotation.y = 0;
+				bunnyMesh.rotation.z = 0;
+
 				break;
 
 			case 38: // arrow up
@@ -347,18 +451,75 @@
 				break;
 
 			case 87: // w = camera forward
-				camera.translateZ(-0.05);
+				camera.translateZ(-0.1);
 				break;
 
 			case 83: // s = camera backwards
-				camera.translateZ(0.05);
+				camera.translateZ(0.1);
 				break;
 
 			case 84: // t = render textures
-
 				renderTextures();
+				break;
+
+			case 104: // 8 = orbit in the upwards direction
+				orbit(0, 0.01);
+				break;
+
+			case 100: // 4 = orbit in the left direction
+				orbit(-0.01, 0);
+				break;
+
+			case 102: // 6 = orbit in the right direction
+				orbit(0.01, 0.);
+				break;
+
+			case 98: // 2 = orbit in the upwards direction
+				orbit(0, -0.01);
 		}
 	}
+
+	// Handle mouse movement
+	function handleMouseEvent(event)
+	{
+
+	}
+
+	// Handle mouse wheel movement
+	function handleMouseWheel(event)
+	{
+
+	}
+
+	function orbit(angleY, angleX)
+	{
+		angleX = -angleX;
+
+		angleX *= Math.PI/450;
+		angleY *= Math.PI/450;
+
+		var center = new THREE.Vector3();
+		var radius, phi, theta;
+		var pos = camera.position;
+		// Convert current camera position to spherical coordinates
+		radius = pos.length();
+		phi = Math.atan2(pos.y, pos.x); // corresponds to the angle between x axis and radius line
+		theta = Math.acos(pos.z / radius); // corresponds to the angle between y axis and radius line
+
+		// Subtract angles to mimic translation in an orbit manner
+		phi -= angleX;
+		theta = Math.min(Math.max(theta - angleY, 0), Math.PI);
+
+		// Convert the spherical to cartesian coordinates
+		pos.x = radius * Math.sin(theta) * Math.cos(phi);
+		pos.y = radius * Math.sin(theta) * Math.sin(phi);
+		pos.z = radius * Math.cos(theta);
+
+		camera.position.add(center);
+		camera.lookAt(center);
+	}
+
+
 </script>
 </body>
 </html>

@@ -6,7 +6,7 @@
 </head>
 <body>
 <script src="three.js"></script>
-<script src="controls.js"></script>
+<script src="scripts/controls.js"></script>
 <script type="text/javascript">
     "use strict";
 
@@ -29,10 +29,10 @@
             pos = camera.position.sub(center),
             radius = pos.length(),
             theta = Math.acos(pos.z / radius),
-            phi = Math.atan2(pos.y, pos.x);
+            phi = Math.atan(pos.y/ pos.x);
 
         // Subtract deltaTheta and deltaPhi
-        theta = Math.min(Math.max(theta - deltaTheta, 0), Math.PI);
+        theta -= deltaTheta;
         phi -= deltaPhi;
 
         // Turn back into Cartesian coordinates
@@ -47,7 +47,7 @@
 
     function zoomIn() {
         camera.position.sub(center).multiplyScalar(0.9).add(center);
-        redraw();
+        redraw()
     }
 
     function zoomOut() {
