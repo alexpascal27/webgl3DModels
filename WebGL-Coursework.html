@@ -25,6 +25,7 @@
 	var camera, scene, renderer, mesh;
 	var geometry, bunnyObject, bunnyMesh;
 	var controls;
+	var luffyMesh, shipMesh;
 
 	// Initialise the scene, and draw it for the first time.
 	init();
@@ -60,15 +61,8 @@
 		light.position.set( -1, 1, -10 );
 		scene.add( light );
 
-		loadOBJModel('http://localhost:8000/models/buggy/Buggy.obj','http://localhost:8000/models/buggy/Buggy.jpg', new THREE.Vector3(0.05, 0.05, 0.05), new THREE.Vector3(5, 0.8, -5));
-		loadOBJModel('http://localhost:8000/models/camp/Camp.obj','http://localhost:8000/models/camp/camp.jpg', new THREE.Vector3(0.005, 0.005, 0.005), new THREE.Vector3(5, 1, -2));
-		loadOBJModel('http://localhost:8000/models/dolphin/dolphin_jumping.obj', 'http://localhost:8000/models/dolphin/dolphin-tex.png',  new THREE.Vector3(2, 2, 2),  new THREE.Vector3(-10, -7, -10));
-		loadOBJMTLModel('http://localhost:8000/models/naruto/','Naruto.obj', 'Naruto.mtl',  new THREE.Vector3(0.5, 0.5, 0.5),  new THREE.Vector3(5, 0.8, -3));
-		loadOBJMTLModel('http://localhost:8000/models/ship/','ship.obj', 'ship.mtl',  new THREE.Vector3(1, 1, 1),  new THREE.Vector3(10, -1, 10));
-		loadOBJMTLModel('http://localhost:8000/models/tower_hut/','tower.obj', 'tower.mtl',  new THREE.Vector3(1.5, 1.5, 1.5),  new THREE.Vector3(-5, -1, -20));
-
-
 		loadGround();
+		loadRequirement10(new THREE.Vector3(10, 0, -10));
 
 		// Set up the Web GL renderer.
 		renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -84,14 +78,14 @@
 		window.addEventListener('resize', handleResize, false);
 	}
 
-	function zoomIn()
+	function zoomIn(scale)
 	{
-		camera.translateZ(-0.1);
+		camera.translateZ(-scale);
 	}
 
-	function zoomOut()
+	function zoomOut(scale)
 	{
-		camera.translateZ(0.1);
+		camera.translateZ(scale);
 	}
 
 	function initCameraAndScene()
@@ -298,7 +292,7 @@
 	function loadGround()
 	{
 		// Set up a plane and apply the water texture to make it look like an ocean
-		let groundPlaneGeometry = new THREE.PlaneGeometry(100, 100 , 100, 100);
+		let groundPlaneGeometry = new THREE.PlaneGeometry(300, 300 , 1, 1);
 
 		var textureLoader = new THREE.TextureLoader();
 		var map = textureLoader.load('http://localhost:8000/textures/water_texture.jpg');
@@ -312,6 +306,17 @@
 		ground.position.y = -1;
 
 		scene.add(ground);
+	}
+
+	function loadRequirement10(translationVector)
+	{
+		loadOBJModel('http://localhost:8000/models/buggy/Buggy.obj','http://localhost:8000/models/buggy/Buggy.jpg', new THREE.Vector3(0.05, 0.05, 0.05), (new THREE.Vector3(0,0,0)).addVectors(translationVector, new THREE.Vector3(5, 0.8, -5)));
+		loadOBJModel('http://localhost:8000/models/camp/Camp.obj','http://localhost:8000/models/camp/camp.jpg', new THREE.Vector3(0.005, 0.005, 0.005),  (new THREE.Vector3(0,0,0)).addVectors(translationVector, new THREE.Vector3(5, 1, -2)));
+		loadOBJModel('http://localhost:8000/models/dolphin/dolphin_jumping.obj', 'http://localhost:8000/models/dolphin/dolphin-tex.png',  new THREE.Vector3(2, 2, 2), new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(-10, -7, -10)));
+		loadOBJMTLModel('http://localhost:8000/models/naruto/','Naruto.obj', 'Naruto.mtl',  new THREE.Vector3(0.5, 0.5, 0.5),  new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(5, 0.8, -3)));
+		loadShip('http://localhost:8000/models/ship/','ship.obj', 'ship.mtl',  new THREE.Vector3(1, 1, 1),  new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(10, -1, 10)));
+		loadOBJMTLModel('http://localhost:8000/models/tower_hut/','tower.obj', 'tower.mtl',  new THREE.Vector3(1.5, 1.5, 1.5),  new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(-5, -1, -20)));
+		loadLuffy('http://localhost:8000/models/luffy/','luffy.obj', 'luffy.mtl',  new THREE.Vector3(0.02, 0.02, 0.02),  new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(13, 3.3, 10)));
 	}
 
 	function loadOBJModel(url, textureUrl, scaleVector, translateVector)
@@ -382,6 +387,73 @@
 						}
 
 						scene.add(object);
+						return object;
+					})
+				});
+	}
+
+	function loadShip(path, objURL, mtlURL,scaleVector, translateVector)
+	{
+
+		// initialise the loaders
+		var mtlLoader = new MTLLoader();
+		var objLoader = new THREE.OBJLoader();
+		mtlLoader.setPath(path);
+		objLoader.setPath(path);
+
+
+		mtlLoader.load(
+				// resource URL
+				mtlURL,
+				// called when resource is loaded
+				function ( materials )
+				{
+					materials.preload();
+
+					objLoader.setMaterials(materials);
+					objLoader.load(objURL, function (object) {
+						if(scaleVector!=null) object.scale.set(scaleVector.x, scaleVector.y, scaleVector.z);
+						if(translateVector!=null) {
+							object.translateX(translateVector.x);
+							object.translateY(translateVector.y);
+							object.translateZ(translateVector.z);
+						}
+
+						shipMesh = object;
+						scene.add(shipMesh);
+					})
+				});
+	}
+
+	function loadLuffy(path, objURL, mtlURL,scaleVector, translateVector)
+	{
+
+		// initialise the loaders
+		var mtlLoader = new MTLLoader();
+		var objLoader = new THREE.OBJLoader();
+		mtlLoader.setPath(path);
+		objLoader.setPath(path);
+
+
+		mtlLoader.load(
+				// resource URL
+				mtlURL,
+				// called when resource is loaded
+				function ( materials )
+				{
+					materials.preload();
+
+					objLoader.setMaterials(materials);
+					objLoader.load(objURL, function (object) {
+						if(scaleVector!=null) object.scale.set(scaleVector.x, scaleVector.y, scaleVector.z);
+						if(translateVector!=null) {
+							object.translateX(translateVector.x);
+							object.translateY(translateVector.y);
+							object.translateZ(translateVector.z);
+						}
+
+						luffyMesh = object;
+						scene.add(luffyMesh);
 					})
 				});
 	}
@@ -404,6 +476,21 @@
 
 		// Render the current scene to the screen.
 		renderer.render(scene, camera);
+	}
+
+	function moveShip(x, yAngle)
+	{
+		if(x!=null)
+		{
+			luffyMesh.translateX(x);
+			shipMesh.translateX(x);
+		}
+		if(yAngle!=null)
+		{
+			//luffyMesh.rotateY(yAngle);
+			shipMesh.rotateY(yAngle);
+			console.log(shipMesh.rotation.y);
+		}
 	}
 
 	// Handle keyboard presses.
@@ -454,27 +541,27 @@
 				break;
 
 			case 38: // arrow up
-				camera.translateY(0.05);
+				camera.translateY(1);
 				break;
 
 			case 40: // arrow down
-				camera.translateY(-0.05);
+				camera.translateY(-1);
 				break;
 
 			case 37: // arrow left
-				camera.translateX(-0.05);
+				camera.translateX(-1);
 				break;
 
 			case 39: // arrow right
-				camera.translateX(0.05);
+				camera.translateX(1);
 				break;
 
 			case 87: // w = camera forward
-				camera.translateZ(-0.1);
+				zoomIn(1);
 				break;
 
 			case 83: // s = camera backwards
-				camera.translateZ(0.1);
+				zoomOut(1);
 				break;
 
 			case 84: // t = render textures
@@ -495,6 +582,23 @@
 
 			case 98: // 2 = orbit in the upwards direction
 				orbit(0, -0.01);
+				break
+
+			case 73: //i = move ship forward
+				moveShip(-1, null);
+				break;
+
+			case 74: //j = rotate ship left
+				moveShip(null, 15);
+				break;
+
+			case 75: //k = move ship backward
+				moveShip(1, null);
+				break;
+
+			case 76: //l = move ship right
+				moveShip(null, -15);
+				break;
 		}
 	}
 
