@@ -23,9 +23,14 @@
 	import {MTLLoader} from 'http://localhost:8000/scripts/MTLLoader.js';
 
 	var camera, scene, renderer, mesh;
+	// Bunny variables
 	var geometry, bunnyObject, bunnyMesh;
+	// Orbit controls variables
 	var controls;
-	var luffyMesh, shipMesh;
+	// Ship Mesh
+	var shipMesh;
+	// Lighting
+	var campFireLight;
 
 	// Initialise the scene, and draw it for the first time.
 	init();
@@ -54,12 +59,12 @@
 		// Basic ambient lighting.
 		scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 
-
 		// TO DO: add more complex lighting for 'face' rendering mode (requirement 4).
-		const light = new THREE.PointLight( 0xffff00, 2, 1000000000);
-		light.castShadow = true;
-		light.position.set( -1, 1, -10 );
-		scene.add( light );
+		campFireLight = new THREE.PointLight( 0xffff00, 2, 1000000000);
+		campFireLight.castShadow = true;
+		campFireLight.position.set( 9, 1, -18 );
+		campFireLight.name = 'campFireLight';
+		scene.add( campFireLight );
 
 		loadGround();
 		loadRequirement10(new THREE.Vector3(10, 0, -10));
@@ -310,13 +315,18 @@
 
 	function loadRequirement10(translationVector)
 	{
-		loadOBJModel('http://localhost:8000/models/buggy/Buggy.obj','http://localhost:8000/models/buggy/Buggy.jpg', new THREE.Vector3(0.05, 0.05, 0.05), (new THREE.Vector3(0,0,0)).addVectors(translationVector, new THREE.Vector3(5, 0.8, -5)));
+		loadOBJModel('http://localhost:8000/models/buggy/Buggy.obj','http://localhost:8000/models/buggy/Buggy.jpg', new THREE.Vector3(0.05, 0.05, 0.05), (new THREE.Vector3(0,0,0)).addVectors(translationVector, new THREE.Vector3(5, 0.8, -7)));
 		loadOBJModel('http://localhost:8000/models/camp/Camp.obj','http://localhost:8000/models/camp/camp.jpg', new THREE.Vector3(0.005, 0.005, 0.005),  (new THREE.Vector3(0,0,0)).addVectors(translationVector, new THREE.Vector3(5, 1, -2)));
 		loadOBJModel('http://localhost:8000/models/dolphin/dolphin_jumping.obj', 'http://localhost:8000/models/dolphin/dolphin-tex.png',  new THREE.Vector3(2, 2, 2), new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(-10, -7, -10)));
-		loadOBJMTLModel('http://localhost:8000/models/naruto/','Naruto.obj', 'Naruto.mtl',  new THREE.Vector3(0.5, 0.5, 0.5),  new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(5, 0.8, -3)));
-		loadShip('http://localhost:8000/models/ship/','ship.obj', 'ship.mtl',  new THREE.Vector3(1, 1, 1),  new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(10, -1, 10)));
-		loadOBJMTLModel('http://localhost:8000/models/tower_hut/','tower.obj', 'tower.mtl',  new THREE.Vector3(1.5, 1.5, 1.5),  new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(-5, -1, -20)));
-		loadLuffy('http://localhost:8000/models/luffy/','luffy.obj', 'luffy.mtl',  new THREE.Vector3(0.02, 0.02, 0.02),  new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(13, 3.3, 10)));
+		loadOBJMTLModel('http://localhost:8000/models/zoro/','zoro.obj', 'zoro.mtl',  new THREE.Vector3(0.035, 0.035, 0.035),  new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(7, -0.2, -1)), new THREE.Vector3(-90*Math.PI/180, 0*Math.PI/180, 230*Math.PI/180));
+		// Load the ship that can be moved
+		loadShip('http://localhost:8000/models/ship/', 'ship.obj', 'ship.mtl',  new THREE.Vector3(1, 1, 1),  new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(10, -1, 6)));
+		// Load tower hut to add to the buildings
+		loadOBJMTLModel('http://localhost:8000/models/tower_hut/','tower.obj', 'tower.mtl',  new THREE.Vector3(1.5, 1.5, 1.5),  new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(-5, -1, -20)), null);
+		// Load Luffy on deck
+		loadOBJMTLModel('http://localhost:8000/models/luffy/','luffy.obj', 'luffy.mtl',  new THREE.Vector3(0.02, 0.02, 0.02),  new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(-5, 0.5, -16)), new THREE.Vector3(0*Math.PI/180, 45*Math.PI/180, 0*Math.PI/180));
+		// Load Chopper under the tent
+		loadOBJMTLModel('http://localhost:8000/models/chopper/','chopper.obj', 'chopper.mtl',  new THREE.Vector3(0.02, 0.02, 0.02),  new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(6, 0.8, -10)), new THREE.Vector3(0*Math.PI/180, 5*Math.PI/180, 0*Math.PI/180));
 	}
 
 	function loadOBJModel(url, textureUrl, scaleVector, translateVector)
@@ -359,15 +369,13 @@
 		);
 	}
 
-	function loadOBJMTLModel(path, objURL, mtlURL,scaleVector, translateVector)
+	function loadOBJMTLModel(path, objURL, mtlURL,scaleVector, translateVector, rotateVector)
 	{
-
 		// initialise the loaders
 		var mtlLoader = new MTLLoader();
 		var objLoader = new THREE.OBJLoader();
 		mtlLoader.setPath(path);
 		objLoader.setPath(path);
-
 
 		mtlLoader.load(
 				// resource URL
@@ -385,6 +393,12 @@
 							object.translateY(translateVector.y);
 							object.translateZ(translateVector.z);
 						}
+						if(rotateVector!=null)
+						{
+							object.rotateX(rotateVector.x);
+							object.rotateY(rotateVector.y);
+							object.rotateZ(rotateVector.z);
+						}
 
 						scene.add(object);
 						return object;
@@ -394,13 +408,11 @@
 
 	function loadShip(path, objURL, mtlURL,scaleVector, translateVector)
 	{
-
 		// initialise the loaders
 		var mtlLoader = new MTLLoader();
 		var objLoader = new THREE.OBJLoader();
 		mtlLoader.setPath(path);
 		objLoader.setPath(path);
-
 
 		mtlLoader.load(
 				// resource URL
@@ -421,39 +433,6 @@
 
 						shipMesh = object;
 						scene.add(shipMesh);
-					})
-				});
-	}
-
-	function loadLuffy(path, objURL, mtlURL,scaleVector, translateVector)
-	{
-
-		// initialise the loaders
-		var mtlLoader = new MTLLoader();
-		var objLoader = new THREE.OBJLoader();
-		mtlLoader.setPath(path);
-		objLoader.setPath(path);
-
-
-		mtlLoader.load(
-				// resource URL
-				mtlURL,
-				// called when resource is loaded
-				function ( materials )
-				{
-					materials.preload();
-
-					objLoader.setMaterials(materials);
-					objLoader.load(objURL, function (object) {
-						if(scaleVector!=null) object.scale.set(scaleVector.x, scaleVector.y, scaleVector.z);
-						if(translateVector!=null) {
-							object.translateX(translateVector.x);
-							object.translateY(translateVector.y);
-							object.translateZ(translateVector.z);
-						}
-
-						luffyMesh = object;
-						scene.add(luffyMesh);
 					})
 				});
 	}
@@ -482,14 +461,11 @@
 	{
 		if(x!=null)
 		{
-			luffyMesh.translateX(x);
 			shipMesh.translateX(x);
 		}
 		if(yAngle!=null)
 		{
-			//luffyMesh.rotateY(yAngle);
 			shipMesh.rotateY(yAngle);
-			console.log(shipMesh.rotation.y);
 		}
 	}
 
@@ -589,7 +565,7 @@
 				break;
 
 			case 74: //j = rotate ship left
-				moveShip(null, 15);
+				moveShip(null, 15*Math.PI/180);
 				break;
 
 			case 75: //k = move ship backward
@@ -597,8 +573,21 @@
 				break;
 
 			case 76: //l = move ship right
-				moveShip(null, -15);
+				moveShip(null, -15*Math.PI/180);
 				break;
+
+			case 67://c = toggle campfire light
+				// If already in scene then remove
+				if(scene.getObjectByName('campFireLight'))
+				{
+					scene.remove(campFireLight);
+				}
+				// If not in scene then add it
+				else
+				{
+					campFireLight.name = 'campFireLight';
+					scene.add(campFireLight);
+				}
 		}
 	}
 
