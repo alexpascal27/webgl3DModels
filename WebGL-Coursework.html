@@ -17,20 +17,25 @@
 <script type="module" src="http://localhost:8000/scripts/MTLLoader.js"></script>
 <script type="module">
 	"use strict"; // https://stackoverflow.com/q/1335851/72470
+	import {MTLLoader} from 'http://localhost:8000/scripts/MTLLoader.js';
+	import Stats from 'http://localhost:8000/scripts/stats.module.js';
+	import {GUI} from 'http://localhost:8000/scripts/dat.gui.module.js';
 
 	// Global variables that are available in all functions.
 	// Note: You can add your own here, e.g. to store the rendering mode.
-	import {MTLLoader} from 'http://localhost:8000/scripts/MTLLoader.js';
-
 	var camera, scene, renderer, mesh;
 	// Bunny variables
-	var geometry, bunnyObject, bunnyMesh;
+	var geometry, bunnyObject, bunnyMesh = new THREE.Mesh(new THREE.Geometry(), null);
 	// Orbit controls variables
 	var controls;
 	// Ship Mesh
 	var shipMesh;
 	// Lighting
 	var campFireLight;
+
+	// GUI stats
+	var stats = Stats();
+	document.body.appendChild(stats.dom);
 
 	// Initialise the scene, and draw it for the first time.
 	init();
@@ -41,6 +46,8 @@
 	document.addEventListener('keydown', handleKeyDown);
 	document.addEventListener('mousewheel', handleMouseWheel);
 	document.addEventListener('mousemove', handleMouseMovement);
+
+
 
 	// Scene initialisation. This function is only run once, at the very beginning.
 	function init()
@@ -78,9 +85,50 @@
 		//Controls.addMouseHandler(renderer.domElement, orbit, zoomIn, zoomOut);
 		controls = new THREE.OrbitControls( camera, renderer.domElement );
 
+		initGUI();
 
 		// Handle resizing of the browser window.
 		window.addEventListener('resize', handleResize, false);
+	}
+
+	function initGUI()
+	{
+		const gui = new GUI({width: 300 });
+		var campFireToggle = {toggle: function(){toggleCampFireLight()}};
+		gui.add(campFireToggle, "toggle").name("Click to toggle campfire light!");
+
+		const cubeFolder = gui.addFolder("Cube");
+		cubeFolder.add(mesh.rotation, "x", 0, Math.PI * 2, 0.01).name("X Rotation:");
+		cubeFolder.add(mesh.rotation, "y", 0, Math.PI * 2, 0.01).name("Y Rotation:");
+		cubeFolder.add(mesh.rotation, "z", 0, Math.PI * 2, 0.01).name("Z Rotation:");
+
+		var addTextures = {add: function(){renderTextures()}};
+		cubeFolder.add(addTextures, "add").name("Textures On");
+		var onlyVertices = {add: function(){loadCubeJustVertices()}};
+		cubeFolder.add(onlyVertices, "add").name("Only Vertices");
+		var onlyEdges = {add: function(){loadCubeJustEdges()}};
+		cubeFolder.add(onlyEdges, "add").name("Only Edges");
+		cubeFolder.open();
+
+		const bunnyFolder = gui.addFolder("Bunny");
+		bunnyFolder.add(bunnyMesh.rotation, "x", 0, Math.PI * 2, 0.01).name("X Rotation:");
+		bunnyFolder.add(bunnyMesh.rotation, "y", 0, Math.PI * 2, 0.01).name("Y Rotation:");
+		bunnyFolder.add(bunnyMesh.rotation, "z", 0, Math.PI * 2, 0.01).name("Z Rotation:");
+
+		addTextures = {add: function(){}};
+		bunnyFolder.add(addTextures, "add").name("Textures On");
+		onlyVertices = {add: function(){loadCubeJustVertices()}};
+		bunnyFolder.add(onlyVertices, "add").name("Only Vertices");
+		onlyEdges = {add: function(){loadCubeJustEdges()}};
+		bunnyFolder.add(onlyEdges, "add").name("Only Edges");
+		bunnyFolder.open();
+
+		const cameraFolder = gui.addFolder("Camera");
+		cameraFolder.add(camera.position, "x", -100, 100, 1);
+		cameraFolder.add(camera.position, "y", -100, 100, 1);
+		cameraFolder.add(camera.position, "z", -100, 100, 1);
+		cameraFolder.open();
+
 	}
 
 	function zoomIn(scale)
@@ -452,6 +500,7 @@
 		 */
 
 		controls.update();
+		stats.update();
 
 		// Render the current scene to the screen.
 		renderer.render(scene, camera);
@@ -575,19 +624,21 @@
 			case 76: //l = move ship right
 				moveShip(null, -15*Math.PI/180);
 				break;
+		}
+	}
 
-			case 67://c = toggle campfire light
-				// If already in scene then remove
-				if(scene.getObjectByName('campFireLight'))
-				{
-					scene.remove(campFireLight);
-				}
-				// If not in scene then add it
-				else
-				{
-					campFireLight.name = 'campFireLight';
-					scene.add(campFireLight);
-				}
+	function toggleCampFireLight()
+	{
+		// If already in scene then remove
+		if(scene.getObjectByName('campFireLight'))
+		{
+			scene.remove(campFireLight);
+		}
+		// If not in scene then add it
+		else
+		{
+			campFireLight.name = 'campFireLight';
+			scene.add(campFireLight);
 		}
 	}
 
