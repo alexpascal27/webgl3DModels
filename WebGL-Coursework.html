@@ -18,6 +18,7 @@
 <script type="module">
 	"use strict"; // https://stackoverflow.com/q/1335851/72470
 	import {MTLLoader} from 'http://localhost:8000/scripts/MTLLoader.js';
+	import {FBXLoader} from "http://localhost:8000/scripts/FBXLoader.js";
 	import Stats from 'http://localhost:8000/scripts/stats.module.js';
 	import {GUI} from 'http://localhost:8000/scripts/dat.gui.module.js';
 
@@ -29,7 +30,7 @@
 	// Orbit controls variables
 	var controls;
 	// Ship Mesh
-	var shipMesh;
+	var shipMesh, otherShipMesh, otherShipBound = 150, otherShipSpeed = 0.05;
 	// Lighting
 	var campFireLight;
 
@@ -44,8 +45,6 @@
 	// Listen for keyboard events, to react to them.
 	// Note: there are also other event listeners, e.g. for mouse events.
 	document.addEventListener('keydown', handleKeyDown);
-	document.addEventListener('mousewheel', handleMouseWheel);
-	document.addEventListener('mousemove', handleMouseMovement);
 
 
 
@@ -54,11 +53,11 @@
 	{
 		initCameraAndScene();
 
-		loadObject();
+		loadBunny();
 
 		// TO DO: Draw a cube (requirement 1).
 		initCubeGeometry();
-		loadCube();
+		renderCube();
 
 		// TO DO: Visualise the axes of the global coordinate system (requirment 2).
 		initXYZAxis();
@@ -73,7 +72,7 @@
 		campFireLight.name = 'campFireLight';
 		scene.add( campFireLight );
 
-		loadGround();
+		renderGround();
 		loadRequirement10(new THREE.Vector3(10, 0, -10));
 
 		// Set up the Web GL renderer.
@@ -87,40 +86,42 @@
 
 		initGUI();
 
+		renderMovingShip();
+
 		// Handle resizing of the browser window.
 		window.addEventListener('resize', handleResize, false);
 	}
 
 	function initGUI()
 	{
-		const gui = new GUI({width: 300 });
+		const gui = new GUI({width: 500 });
 		var campFireToggle = {toggle: function(){toggleCampFireLight()}};
 		gui.add(campFireToggle, "toggle").name("Click to toggle campfire light!");
+		var spawnDolphin = {spawn: function(){spawnRandomDolphin()}};
+		gui.add(spawnDolphin, "spawn").name("Click to randomly spawn a dolphin!");
 
 		const cubeFolder = gui.addFolder("Cube");
-		cubeFolder.add(mesh.rotation, "x", 0, Math.PI * 2, 0.01).name("X Rotation:");
-		cubeFolder.add(mesh.rotation, "y", 0, Math.PI * 2, 0.01).name("Y Rotation:");
-		cubeFolder.add(mesh.rotation, "z", 0, Math.PI * 2, 0.01).name("Z Rotation:");
-
-		var addTextures = {add: function(){renderTextures()}};
-		cubeFolder.add(addTextures, "add").name("Textures On");
-		var onlyVertices = {add: function(){loadCubeJustVertices()}};
+		var onlyFaces = {add: function(){renderCube()}};
+		cubeFolder.add(onlyFaces, "add").name("Only Faces");
+		var onlyVertices = {add: function(){renderCubeJustVertices();}};
 		cubeFolder.add(onlyVertices, "add").name("Only Vertices");
-		var onlyEdges = {add: function(){loadCubeJustEdges()}};
+		var onlyEdges = {add: function(){renderCubeJustEdges()}};
 		cubeFolder.add(onlyEdges, "add").name("Only Edges");
+		var addTextures = {add: function(){renderCubeTexturesNoLighting()}};
+		cubeFolder.add(addTextures, "add").name("Textures On(Not affected by lighting)");
+		addTextures = {add: function(){renderCubeTexturesLighting()}};
+		cubeFolder.add(addTextures, "add").name("Textures On(Affected by lighting)");
 		cubeFolder.open();
 
 		const bunnyFolder = gui.addFolder("Bunny");
-		bunnyFolder.add(bunnyMesh.rotation, "x", 0, Math.PI * 2, 0.01).name("X Rotation:");
-		bunnyFolder.add(bunnyMesh.rotation, "y", 0, Math.PI * 2, 0.01).name("Y Rotation:");
-		bunnyFolder.add(bunnyMesh.rotation, "z", 0, Math.PI * 2, 0.01).name("Z Rotation:");
-
-		addTextures = {add: function(){}};
-		bunnyFolder.add(addTextures, "add").name("Textures On");
-		onlyVertices = {add: function(){loadCubeJustVertices()}};
+		onlyFaces = {add: function(){renderBunny()}};
+		bunnyFolder.add(onlyFaces, "add").name("Only Faces");
+		onlyVertices = {add: function(){renderBunnyJustVertices()}};
 		bunnyFolder.add(onlyVertices, "add").name("Only Vertices");
-		onlyEdges = {add: function(){loadCubeJustEdges()}};
+		onlyEdges = {add: function(){renderBunnyJustEdges()}};
 		bunnyFolder.add(onlyEdges, "add").name("Only Edges");
+		var addTextures = {add: function(){renderBunnyLighting()}};
+		bunnyFolder.add(addTextures, "add").name("Faces Affected by lighting");
 		bunnyFolder.open();
 
 		const cameraFolder = gui.addFolder("Camera");
@@ -128,6 +129,28 @@
 		cameraFolder.add(camera.position, "y", -100, 100, 1);
 		cameraFolder.add(camera.position, "z", -100, 100, 1);
 		cameraFolder.open();
+
+		const movingShipFolder = gui.addFolder("Moving Ship");
+		var changeBoatSpeed = {toggle: function(){
+			if(otherShipSpeed > 0.01) otherShipSpeed -= 0.01;
+			else otherShipSpeed = 0.01;
+		}};
+		movingShipFolder.add(changeBoatSpeed, "toggle").name("Decrease Speed");
+		changeBoatSpeed = {toggle: function(){
+				if(otherShipSpeed < 1) otherShipSpeed += 0.01;
+				else otherShipSpeed = 1;
+			}};
+		movingShipFolder.add(changeBoatSpeed, "toggle").name("Increase Speed");
+		var changeBoatBound = {toggle: function(){
+				if(otherShipBound > 5) otherShipBound -= 5;
+				else otherShipBound = 5;
+			}};
+		movingShipFolder.add(changeBoatBound, "toggle").name("Decrease Max Bound");
+		changeBoatBound = {toggle: function(){
+				if(otherShipBound < 150) otherShipBound += 5;
+				else otherShipBound = 150;
+			}};
+		movingShipFolder.add(changeBoatBound, "toggle").name("Increase Max Bound");
 
 	}
 
@@ -234,29 +257,6 @@
 		 */
 	}
 
-	function renderTextures()
-	{
-		scene.remove(mesh);
-
-		const boxGeometry = new THREE.BoxBufferGeometry(2, 2, 2);
-		const loader = new THREE.TextureLoader();
-		const material = new THREE.MeshPhongMaterial({map: loader.load('https://cdn1.i-scmp.com/sites/default/files/styles/768x768/public/images/methode/2018/12/28/f137ab00-0996-11e9-8e9f-24e0f03e43a7_image_hires_175807.jpg?itok=4dAlR0QI&v=1545991093')});
-
-		const materials = [
-			new THREE.MeshPhongMaterial({map: loader.load('https://res-3.cloudinary.com/crunchbase-production/image/upload/c_lpad,f_auto,q_auto:eco/taqpepcwzincpeytldot')}), //front right
-			new THREE.MeshPhongMaterial({map: loader.load('https://static.wikia.nocookie.net/haikyuu/images/a/a1/Haikyuu_Poster.png/revision/latest/top-crop/width/220/height/220?cb=20140326213635')}), // back left
-			new THREE.MeshPhongMaterial({map: loader.load('https://yt3.ggpht.com/ytc/AAUvwnifzf0a9h5PmkSSSEh_In8dRZasxvcdRpSQ2wM5SA=s900-c-k-c0x00ffffff-no-rj')}), // top
-			new THREE.MeshPhongMaterial({map: loader.load('https://cdn.vox-cdn.com/thumbor/wQooBXM6ZRWVCkdI6W_KgDR1sjc=/0x0:1920x1200/1400x1400/filters:focal(1313x531:1619x837):format(jpeg)/cdn.vox-cdn.com/uploads/chorus_image/image/53947575/reinhammer.0.jpg')}), // bottom
-			new THREE.MeshPhongMaterial({map: loader.load('https://i1.sndcdn.com/artworks-000118414405-0c9zmf-t500x500.jpg')}),// front left
-			new THREE.MeshPhongMaterial({map: loader.load('https://cdn1.i-scmp.com/sites/default/files/styles/768x768/public/images/methode/2018/12/28/f137ab00-0996-11e9-8e9f-24e0f03e43a7_image_hires_175807.jpg?itok=4dAlR0QI&v=1545991093')}), // back right
-		];
-
-		// If we want to apply a single texture change the second parameter to the material variable
-		// Otherwise use materials variable
-		mesh = new THREE.Mesh(boxGeometry, materials);
-
-		scene.add(mesh);
-	}
 
 	// Handle resizing of the browser window.
 	function handleResize()
@@ -266,51 +266,7 @@
 		renderer.setSize(window.innerWidth, window.innerHeight);
 	}
 
-	function loadCubeJustVertices()
-	{
-		// Remove the current mesh as we need to render a new mesh
-		scene.remove(mesh);
-		scene.remove(bunnyMesh);
-
-		// Adding a material to make the vertices visible
-		// Points material only shows the points which in our case are 8 vertices
-		const material = new THREE.PointsMaterial({color: 0x00ff00, size: 0.1});
-		mesh = new THREE.Points(geometry, material);
-
-		const bunnyMaterial = new THREE.PointsMaterial({color: 0x00ff00, size: 0.01});
-		bunnyMesh = new THREE.Points(bunnyObject.children[0].geometry, bunnyMaterial);
-		// Adjust scale
-		bunnyMesh.scale.set(0.4, 0.4, 0.4);
-		bunnyMesh.translateX(-0.4);
-
-		// Add the mesh back in the scene
-		scene.add(mesh);
-		scene.add(bunnyMesh);
-	}
-
-	function loadCubeJustEdges()
-	{
-		// Remove the current mesh as we need to render a new mesh
-		scene.remove(mesh);
-		scene.remove(bunnyMesh);
-
-		// Adding a material to make the edges/wireframe visible
-		// The material is told only to show the wireframe of the geometry
-		const material = new THREE.MeshBasicMaterial({color: 0x00ff00, wireframe: true});
-		mesh = new THREE.Mesh(geometry, material);
-
-		// Apply material to object
-		bunnyMesh = new THREE.Mesh(bunnyObject.children[0].geometry, material);
-		// Adjust scale
-		bunnyMesh.scale.set(0.4, 0.4, 0.4);
-		bunnyMesh.translateX(-0.4);
-
-		// Add the mesh back in the scene
-		scene.add(mesh);
-		scene.add(bunnyMesh);
-	}
-
-	function loadCube()
+	function renderCube()
 	{
 		scene.remove(mesh);
 		// Faces naturally render when you add the material
@@ -319,7 +275,83 @@
 		scene.add(mesh);
 	}
 
-	function loadObject()
+	function renderBunny()
+	{
+		scene.remove(bunnyMesh);
+		// Faces naturally render when you add the material
+		const material = new THREE.MeshBasicMaterial({color: 0x0120FF});
+		bunnyMesh = new THREE.Mesh(bunnyObject.children[0].geometry, material);
+		// Adjust scale
+		bunnyMesh.scale.set(0.4, 0.4, 0.4);
+		bunnyMesh.translateX(-0.4);
+
+		scene.add(bunnyMesh);
+	}
+
+	function renderCubeJustVertices()
+	{
+		// Remove the current mesh as we need to render a new mesh
+		scene.remove(mesh);
+
+		// Adding a material to make the vertices visible
+		// Points material only shows the points which in our case are 8 vertices
+		const material = new THREE.PointsMaterial({color: 0x00ff00, size: 0.1});
+		mesh = new THREE.Points(geometry, material);
+
+		// Add the mesh back in the scene
+		scene.add(mesh);
+	}
+
+	function renderBunnyJustVertices()
+	{
+		// Remove the current mesh as we need to render a new mesh
+		scene.remove(bunnyMesh);
+
+		// Adding a material to make the vertices visible
+		// Points material only shows the points which in our case are 8 vertices
+		const bunnyMaterial = new THREE.PointsMaterial({color: 0x00ff00, size: 0.01});
+		bunnyMesh = new THREE.Points(bunnyObject.children[0].geometry, bunnyMaterial);
+		// Adjust scale
+		bunnyMesh.scale.set(0.4, 0.4, 0.4);
+		bunnyMesh.translateX(-0.4);
+
+		// Add the mesh back in the scene
+		scene.add(bunnyMesh);
+	}
+
+	function renderCubeJustEdges()
+	{
+		// Remove the current mesh as we need to render a new mesh
+		scene.remove(mesh);
+
+		// Adding a material to make the edges/wireframe visible
+		// The material is told only to show the wireframe of the geometry
+		const material = new THREE.MeshBasicMaterial({color: 0x00ff00, wireframe: true});
+		mesh = new THREE.Mesh(geometry, material);
+
+		// Add the mesh back in the scene
+		scene.add(mesh);
+	}
+
+	function renderBunnyJustEdges()
+	{
+		// Remove the current mesh as we need to render a new mesh
+		scene.remove(bunnyMesh);
+
+		// Adding a material to make the edges/wireframe visible
+		// The material is told only to show the wireframe of the geometry
+		const material = new THREE.MeshBasicMaterial({color: 0x00ff00, wireframe: true});
+		// Apply material to object
+		bunnyMesh = new THREE.Mesh(bunnyObject.children[0].geometry, material);
+		// Adjust scale
+		bunnyMesh.scale.set(0.4, 0.4, 0.4);
+		bunnyMesh.translateX(-0.4);
+
+		// Add the mesh back in the scene
+		scene.add(bunnyMesh);
+	}
+
+	function loadBunny()
 	{
 		const loader = new THREE.OBJLoader();
 		// load a resource
@@ -342,7 +374,64 @@
 		);
 	}
 
-	function loadGround()
+	function renderCubeTexturesNoLighting()
+	{
+		scene.remove(mesh);
+
+		const boxGeometry = new THREE.BoxBufferGeometry(2, 2, 2);
+		const loader = new THREE.TextureLoader();
+		const materials = [
+			new THREE.MeshBasicMaterial({map: loader.load('https://res-3.cloudinary.com/crunchbase-production/image/upload/c_lpad,f_auto,q_auto:eco/taqpepcwzincpeytldot')}), //front right
+			new THREE.MeshBasicMaterial({map: loader.load('https://static.wikia.nocookie.net/haikyuu/images/a/a1/Haikyuu_Poster.png/revision/latest/top-crop/width/220/height/220?cb=20140326213635')}), // back left
+			new THREE.MeshBasicMaterial({map: loader.load('https://yt3.ggpht.com/ytc/AAUvwnifzf0a9h5PmkSSSEh_In8dRZasxvcdRpSQ2wM5SA=s900-c-k-c0x00ffffff-no-rj')}), // top
+			new THREE.MeshBasicMaterial({map: loader.load('https://cdn.vox-cdn.com/thumbor/wQooBXM6ZRWVCkdI6W_KgDR1sjc=/0x0:1920x1200/1400x1400/filters:focal(1313x531:1619x837):format(jpeg)/cdn.vox-cdn.com/uploads/chorus_image/image/53947575/reinhammer.0.jpg')}), // bottom
+			new THREE.MeshBasicMaterial({map: loader.load('https://i1.sndcdn.com/artworks-000118414405-0c9zmf-t500x500.jpg')}),// front left
+			new THREE.MeshBasicMaterial({map: loader.load('https://cdn1.i-scmp.com/sites/default/files/styles/768x768/public/images/methode/2018/12/28/f137ab00-0996-11e9-8e9f-24e0f03e43a7_image_hires_175807.jpg?itok=4dAlR0QI&v=1545991093')}), // back right
+		];
+
+		// If we want to apply a single texture change the second parameter to the material variable
+		// Otherwise use materials variable
+		mesh = new THREE.Mesh(boxGeometry, materials);
+
+		scene.add(mesh);
+	}
+
+	function renderCubeTexturesLighting()
+	{
+		scene.remove(mesh);
+
+		const boxGeometry = new THREE.BoxBufferGeometry(2, 2, 2);
+		const loader = new THREE.TextureLoader();
+		const materials = [
+			new THREE.MeshPhongMaterial({map: loader.load('https://res-3.cloudinary.com/crunchbase-production/image/upload/c_lpad,f_auto,q_auto:eco/taqpepcwzincpeytldot')}), //front right
+			new THREE.MeshPhongMaterial({map: loader.load('https://static.wikia.nocookie.net/haikyuu/images/a/a1/Haikyuu_Poster.png/revision/latest/top-crop/width/220/height/220?cb=20140326213635')}), // back left
+			new THREE.MeshPhongMaterial({map: loader.load('https://yt3.ggpht.com/ytc/AAUvwnifzf0a9h5PmkSSSEh_In8dRZasxvcdRpSQ2wM5SA=s900-c-k-c0x00ffffff-no-rj')}), // top
+			new THREE.MeshPhongMaterial({map: loader.load('https://cdn.vox-cdn.com/thumbor/wQooBXM6ZRWVCkdI6W_KgDR1sjc=/0x0:1920x1200/1400x1400/filters:focal(1313x531:1619x837):format(jpeg)/cdn.vox-cdn.com/uploads/chorus_image/image/53947575/reinhammer.0.jpg')}), // bottom
+			new THREE.MeshPhongMaterial({map: loader.load('https://i1.sndcdn.com/artworks-000118414405-0c9zmf-t500x500.jpg')}),// front left
+			new THREE.MeshPhongMaterial({map: loader.load('https://cdn1.i-scmp.com/sites/default/files/styles/768x768/public/images/methode/2018/12/28/f137ab00-0996-11e9-8e9f-24e0f03e43a7_image_hires_175807.jpg?itok=4dAlR0QI&v=1545991093')}), // back right
+		];
+
+		// If we want to apply a single texture change the second parameter to the material variable
+		// Otherwise use materials variable
+		mesh = new THREE.Mesh(boxGeometry, materials);
+
+		scene.add(mesh);
+	}
+
+	function renderBunnyLighting()
+	{
+		scene.remove(bunnyMesh);
+		// Faces naturally render when you add the material
+		const material = new THREE.MeshPhongMaterial({color: 0x0120FF});
+		bunnyMesh = new THREE.Mesh(bunnyObject.children[0].geometry, material);
+		// Adjust scale
+		bunnyMesh.scale.set(0.4, 0.4, 0.4);
+		bunnyMesh.translateX(-0.4);
+
+		scene.add(bunnyMesh);
+	}
+
+	function renderGround()
 	{
 		// Set up a plane and apply the water texture to make it look like an ocean
 		let groundPlaneGeometry = new THREE.PlaneGeometry(300, 300 , 1, 1);
@@ -417,6 +506,64 @@
 		);
 	}
 
+	function loadFBXModel(fbxUrl, scaleVector, translateVector, rotateVector)
+	{
+		// load a resource
+		const loader = new FBXLoader();
+		loader.load(
+				// resource URL
+				fbxUrl,
+				// called when resource is loaded
+				function ( object )
+				{
+					let objectMesh = object;
+
+					if(scaleVector!=null) objectMesh.scale.set(scaleVector.x, scaleVector.y, scaleVector.z);
+					if(translateVector!=null) {
+						objectMesh.translateX(translateVector.x);
+						objectMesh.translateY(translateVector.y);
+						objectMesh.translateZ(translateVector.z);
+					}
+					if(rotateVector!=null)
+					{
+						objectMesh.rotateX(rotateVector.x);
+						objectMesh.rotateY(rotateVector.y);
+						objectMesh.rotateZ(rotateVector.z);
+					}
+					scene.add(objectMesh);
+				}
+		);
+	}
+
+	function loadOtherShip(fbxUrl, scaleVector, translateVector, rotateVector)
+	{
+		// load a resource
+		const loader = new FBXLoader();
+		loader.load(
+				// resource URL
+				fbxUrl,
+				// called when resource is loaded
+				function ( object )
+				{
+					otherShipMesh = object;
+
+					if(scaleVector!=null) otherShipMesh.scale.set(scaleVector.x, scaleVector.y, scaleVector.z);
+					if(translateVector!=null) {
+						otherShipMesh.translateX(translateVector.x);
+						otherShipMesh.translateY(translateVector.y);
+						otherShipMesh.translateZ(translateVector.z);
+					}
+					if(rotateVector!=null)
+					{
+						otherShipMesh.rotateX(rotateVector.x);
+						otherShipMesh.rotateY(rotateVector.y);
+						otherShipMesh.rotateZ(rotateVector.z);
+					}
+					scene.add(otherShipMesh);
+				}
+		);
+	}
+
 	function loadOBJMTLModel(path, objURL, mtlURL,scaleVector, translateVector, rotateVector)
 	{
 		// initialise the loaders
@@ -485,6 +632,30 @@
 				});
 	}
 
+	function renderMovingShip()
+	{
+		loadOtherShip('http://localhost:8000/models/endurance_ship/source/Endurance_LowPoly.fbx', new THREE.Vector3(0.05, 0.05, 0.05), new THREE.Vector3(50, -1, -30), null);
+	}
+
+	function spawnRandomDolphin()
+	{
+		let randomXPosition = getRandomInteger(-140, 140);
+		while(randomXPosition < 20 && randomXPosition > -20){
+			randomXPosition = getRandomInteger(-140, 140);
+		}
+		let randomZPosition = getRandomInteger(-140, 140);
+		while(randomZPosition < 20 && randomZPosition > -20){
+			randomZPosition = getRandomInteger(-140, 140);
+		}
+		loadOBJModel('http://localhost:8000/models/dolphin/dolphin_jumping.obj', 'http://localhost:8000/models/dolphin/dolphin-tex.png',  new THREE.Vector3(2, 2, 2), new THREE.Vector3(randomXPosition, -6, randomZPosition));
+
+	}
+
+	function getRandomInteger(min, max)
+	{
+		return Math.floor(Math.random() * (max-min)) + min;
+	}
+
 	// Animation loop function. This function is called whenever an update is required.
 	function animate()
 	{
@@ -498,6 +669,11 @@
 		orbit(0.0005, 0);
 
 		 */
+		if(otherShipMesh!=null)
+		{
+			moveOtherShip(otherShipSpeed, otherShipBound);
+		}
+
 
 		controls.update();
 		stats.update();
@@ -518,6 +694,20 @@
 		}
 	}
 
+	function moveOtherShip(z, bound)
+	{
+		// If out of bounds then rotate
+		if( otherShipMesh.position.z > bound || otherShipMesh.position.z < -bound )
+		{
+			otherShipMesh.rotateY(Math.PI);
+			otherShipMesh.translateZ(-30);
+		}
+		else
+		{
+			otherShipMesh.translateZ(-z);
+		}
+	}
+
 	// Handle keyboard presses.
 	function handleKeyDown(event)
 	{
@@ -525,23 +715,22 @@
 		{
 				// Render modes.
 			case 70: // f = face
-				loadCube();
+				renderCube();
 				//for(mesh.)
 				break;
 
 			case 69: // e = edge
-				loadCubeJustEdges();
+				renderCubeJustEdges();
 				break;
 
 			case 86: // v = vertex
-				loadCubeJustVertices();
+				renderCubeJustVertices();
 				break;
 
 				// TO DO: add code for starting/stopping rotations (requirement 3).
 			case 88: // x = trigger rotating cube about x axis
 				mesh.rotation.x += 0.01;
 				bunnyMesh.rotation.x += 0.01;
-
 				break;
 
 			case 89: // y = trigger rotating cube about y axis
@@ -587,10 +776,6 @@
 
 			case 83: // s = camera backwards
 				zoomOut(1);
-				break;
-
-			case 84: // t = render textures
-				renderTextures();
 				break;
 
 			case 104: // 8 = orbit in the upwards direction
@@ -640,18 +825,6 @@
 			campFireLight.name = 'campFireLight';
 			scene.add(campFireLight);
 		}
-	}
-
-	// Handle mouse movement
-	function handleMouseEvent(event)
-	{
-
-	}
-
-	// Handle mouse wheel movement
-	function handleMouseWheel(event)
-	{
-
 	}
 
 	function orbit(angleY, angleX)
