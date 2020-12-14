@@ -19,6 +19,8 @@
 	"use strict"; // https://stackoverflow.com/q/1335851/72470
 	import {MTLLoader} from 'http://localhost:8000/scripts/MTLLoader.js';
 	import {FBXLoader} from "http://localhost:8000/scripts/FBXLoader.js";
+	import {GLTFLoader} from "http://localhost:8000/scripts/GLTFLoader.js";
+	import {TGALoader} from "http://localhost:8000/scripts/TGALoader.js";
 	import Stats from 'http://localhost:8000/scripts/stats.module.js';
 	import {GUI} from 'http://localhost:8000/scripts/dat.gui.module.js';
 
@@ -452,9 +454,9 @@
 
 	function loadRequirement10(translationVector)
 	{
-		loadOBJModel('http://localhost:8000/models/buggy/Buggy.obj','http://localhost:8000/models/buggy/Buggy.jpg', new THREE.Vector3(0.05, 0.05, 0.05), (new THREE.Vector3(0,0,0)).addVectors(translationVector, new THREE.Vector3(5, 0.8, -7)));
-		loadOBJModel('http://localhost:8000/models/camp/Camp.obj','http://localhost:8000/models/camp/camp.jpg', new THREE.Vector3(0.005, 0.005, 0.005),  (new THREE.Vector3(0,0,0)).addVectors(translationVector, new THREE.Vector3(5, 1, -2)));
-		loadOBJModel('http://localhost:8000/models/dolphin/dolphin_jumping.obj', 'http://localhost:8000/models/dolphin/dolphin-tex.png',  new THREE.Vector3(2, 2, 2), new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(-10, -7, -10)));
+		loadOBJModel('http://localhost:8000/models/buggy/Buggy.obj','http://localhost:8000/models/buggy/Buggy.jpg', new THREE.Vector3(0.05, 0.05, 0.05), (new THREE.Vector3(0,0,0)).addVectors(translationVector, new THREE.Vector3(5, 0.8, -7)), null);
+		loadOBJModel('http://localhost:8000/models/camp/Camp.obj','http://localhost:8000/models/camp/camp.jpg', new THREE.Vector3(0.005, 0.005, 0.005),  (new THREE.Vector3(0,0,0)).addVectors(translationVector, new THREE.Vector3(5, 1, -2)), null);
+		loadOBJModel('http://localhost:8000/models/dolphin/dolphin_jumping.obj', 'http://localhost:8000/models/dolphin/dolphin-tex.png',  new THREE.Vector3(2, 2, 2), new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(-10, -7, -10)), null);
 		loadOBJMTLModel('http://localhost:8000/models/zoro/','zoro.obj', 'zoro.mtl',  new THREE.Vector3(0.035, 0.035, 0.035),  new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(7, -0.2, -1)), new THREE.Vector3(-90*Math.PI/180, 0*Math.PI/180, 230*Math.PI/180));
 		// Load the ship that can be moved
 		loadShip('http://localhost:8000/models/ship/', 'ship.obj', 'ship.mtl',  new THREE.Vector3(1, 1, 1),  new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(10, -1, 6)));
@@ -464,9 +466,12 @@
 		loadOBJMTLModel('http://localhost:8000/models/luffy/','luffy.obj', 'luffy.mtl',  new THREE.Vector3(0.02, 0.02, 0.02),  new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(-5, 0.5, -16)), new THREE.Vector3(0*Math.PI/180, 45*Math.PI/180, 0*Math.PI/180));
 		// Load Chopper under the tent
 		loadOBJMTLModel('http://localhost:8000/models/chopper/','chopper.obj', 'chopper.mtl',  new THREE.Vector3(0.02, 0.02, 0.02),  new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(6, 0.8, -10)), new THREE.Vector3(0*Math.PI/180, 5*Math.PI/180, 0*Math.PI/180));
+		// Load nami
+		loadGLTFModel('http://localhost:8000/models/nami/scene.gltf', new THREE.Vector3(0.5, 0.5, 0.5), null, null);
+
 	}
 
-	function loadOBJModel(url, textureUrl, scaleVector, translateVector)
+	function loadOBJModel(url, textureUrl, scaleVector, translateVector, rotateVector)
 	{
 		var material;
 
@@ -493,6 +498,12 @@
 						objectMesh.translateY(translateVector.y);
 						objectMesh.translateZ(translateVector.z);
 					}
+					if(rotateVector!=null)
+					{
+						objectMesh.rotateX(rotateVector.x);
+						objectMesh.rotateY(rotateVector.y);
+						objectMesh.rotateZ(rotateVector.z);
+					}
 					scene.add(objectMesh);
 				},
 				// called when loading is in progresses
@@ -508,8 +519,10 @@
 
 	function loadFBXModel(fbxUrl, scaleVector, translateVector, rotateVector)
 	{
+		const manager = new THREE.LoadingManager();
+		manager.addHandler( /\.tga$/i, new TGALoader() );
 		// load a resource
-		const loader = new FBXLoader();
+		const loader = new FBXLoader(manager);
 		loader.load(
 				// resource URL
 				fbxUrl,
@@ -517,6 +530,35 @@
 				function ( object )
 				{
 					let objectMesh = object;
+
+					if(scaleVector!=null) objectMesh.scale.set(scaleVector.x, scaleVector.y, scaleVector.z);
+					if(translateVector!=null) {
+						objectMesh.translateX(translateVector.x);
+						objectMesh.translateY(translateVector.y);
+						objectMesh.translateZ(translateVector.z);
+					}
+					if(rotateVector!=null)
+					{
+						objectMesh.rotateX(rotateVector.x);
+						objectMesh.rotateY(rotateVector.y);
+						objectMesh.rotateZ(rotateVector.z);
+					}
+					scene.add(objectMesh);
+				}
+		);
+	}
+
+	function loadGLTFModel(gltfUrl, scaleVector, translateVector, rotateVector)
+	{
+		// load a resource
+		const loader = new GLTFLoader();
+		loader.load(
+				// resource URL
+				gltfUrl,
+				// called when resource is loaded
+				function ( object )
+				{
+					let objectMesh = object.scene;
 
 					if(scaleVector!=null) objectMesh.scale.set(scaleVector.x, scaleVector.y, scaleVector.z);
 					if(translateVector!=null) {
@@ -639,6 +681,8 @@
 
 	function spawnRandomDolphin()
 	{
+		let randomYAngle = Math.random() * (2 * Math.PI);
+
 		let randomXPosition = getRandomInteger(-140, 140);
 		while(randomXPosition < 20 && randomXPosition > -20){
 			randomXPosition = getRandomInteger(-140, 140);
@@ -647,7 +691,7 @@
 		while(randomZPosition < 20 && randomZPosition > -20){
 			randomZPosition = getRandomInteger(-140, 140);
 		}
-		loadOBJModel('http://localhost:8000/models/dolphin/dolphin_jumping.obj', 'http://localhost:8000/models/dolphin/dolphin-tex.png',  new THREE.Vector3(2, 2, 2), new THREE.Vector3(randomXPosition, -6, randomZPosition));
+		loadOBJModel('http://localhost:8000/models/dolphin/dolphin_jumping.obj', 'http://localhost:8000/models/dolphin/dolphin-tex.png',  new THREE.Vector3(2, 2, 2), new THREE.Vector3(randomXPosition, -6, randomZPosition), new THREE.Vector3(0, randomYAngle, 0));
 
 	}
 
