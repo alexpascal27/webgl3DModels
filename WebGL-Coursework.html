@@ -467,8 +467,9 @@
 		// Load Chopper under the tent
 		loadOBJMTLModel('http://localhost:8000/models/chopper/','chopper.obj', 'chopper.mtl',  new THREE.Vector3(0.02, 0.02, 0.02),  new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(6, 0.8, -10)), new THREE.Vector3(0*Math.PI/180, 5*Math.PI/180, 0*Math.PI/180));
 		// Load nami
-		loadGLTFModel('http://localhost:8000/models/nami/scene.gltf', new THREE.Vector3(0.5, 0.5, 0.5), null, null);
-
+		loadGLTFModel('http://localhost:8000/models/nami/scene.gltf', new THREE.Vector3(7, 7, 7), new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(-3, 8, -17)), new THREE.Vector3(0*Math.PI/180, 45*Math.PI/180, 0*Math.PI/180));
+		loadGLTFModel('http://localhost:8000/models/usopp/scene.gltf' , new THREE.Vector3(1.25, 1.25, 1.25) , (new THREE.Vector3(0,0,0)).addVectors(translationVector, new THREE.Vector3(3.5, 3.9, -14.5)), null);
+		loadGLTFModel('http://localhost:8000/models/sanji/scene.gltf' , new THREE.Vector3(0.015, 0.015, 0.015) , new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(0, 8, -19)), new THREE.Vector3(0*Math.PI/180, -45*Math.PI/180, 0*Math.PI/180));
 	}
 
 	function loadOBJModel(url, textureUrl, scaleVector, translateVector, rotateVector)
