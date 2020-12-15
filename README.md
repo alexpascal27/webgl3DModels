@@ -1,3 +1,26 @@
+# Pre-requisites (what needs to be done for the requirements to work)
+## Start a python server on the 8000 port
+1. Extracted contents from the `code.zip` into a new folder (the name of the folder is irrelevant)
+2. Open terminal in the new folder:
+    * **For Windows:** open the folder, then hold down the shift key and right click somewhere in the folder. Select the "Open Powershell window here" or “Open command window here” option.
+  You can also retrieve the directory of the folder, then open cmd and type `cd {directory}`
+    * **For Linux:** open the folder, then right click somewhere in the folder and select the "Open terminal here" option
+    * **For Mac:** follow the tutorial on this website: https://www.howtogeek.com/210147/how-to-open-terminal-in-the-current-os-x-finder-location/ 
+3. Ensure you have python installed by typing `python -v` (if a version shows then your computer has python installed, otherwise you need to install python from the following link: https://www.python.org/downloads/)
+4. Start the webserver on the 8000 port by typing `python -m http.server 8000`
+## Install extension/add-on to allow CORS on your browser
+Make sure you have either Firefox, Google Chrome or Microsoft Edge installed on your system.
+* **For Firefox**: Add the following add-on: https://addons.mozilla.org/en-GB/firefox/addon/cors-everywhere/ and make sure that the extension icon on top right is green and **not red**![img.png](img.png)
+* **For Chrome**: Add the following extension: https://chrome.google.com/webstore/detail/cors-unblock/lfhmikememgdcahcdlaciloancbhjino?hl=en, and make sure the extension icon is lit up (when you hover over the extension icon, it should say "Access-Control-Allow-Origin is unblocked")![img_1.png](img_1.png)
+* **For Microsoft Edge**: Add the following extension: https://add0n.com/access-control.html?version=0.1.7&type=install , and make sure the extension icon is lit up (when you hover over the extension icon, it should say "Access-Control-Allow-Origin is unblocked")
+  
+  ![img_2.png](img_2.png)
+## Notes
+* Please allow the website to fully load before you start interacting with it, it will have a lag spike at the beginning after it has loaded but after the website should have a good performance
+
+# Requirements
+## 1
+When you load 
 # Credits
 ## Models
 * `zoro` (3D model of a swordsman in a green costume): https://sketchfab.com/3d-models/3dst40-zoro-from-one-piece-bf6fc34c3d784ff38b5a093b4c423abd
