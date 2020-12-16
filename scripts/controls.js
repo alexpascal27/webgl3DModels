@@ -10,7 +10,6 @@ var Controls = (function(Controls) {
             startDragY = null;
 
         function mouseWheelHandler(e) {
-            e = window.event || e;
             var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
 
             if (delta < 0 && zoomOut) {
@@ -44,7 +43,6 @@ var Controls = (function(Controls) {
         }
 
         domObject.addEventListener("mousewheel", mouseWheelHandler);
-        domObject.addEventListener("DOMMouseScroll", mouseWheelHandler);
         domObject.addEventListener("mousedown", mouseDownHandler);
         domObject.addEventListener("mousemove", mouseMoveHandler);
         domObject.addEventListener("mouseup", mouseUpHandler);

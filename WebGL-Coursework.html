@@ -28,8 +28,6 @@
 	var camera, scene, renderer, mesh;
 	// Bunny variables
 	var geometry, bunnyObject, bunnyMesh = new THREE.Mesh(new THREE.Geometry(), null);
-	// Orbit controls variables
-	var controls;
 	// Ship Mesh
 	var shipMesh, otherShipMesh, otherShipBound = 150, otherShipSpeed = 0.05;
 	// Lighting
@@ -46,13 +44,17 @@
 	// Listen for keyboard events, to react to them.
 	// Note: there are also other event listeners, e.g. for mouse events.
 	document.addEventListener('keydown', handleKeyDown);
-
+	//document.addEventListener("mousedown", mouseDownHandler);
+	//document.addEventListener("mousemove", mouseMoveHandler);
+	//document.addEventListener("mouseup", mouseUpHandler);
 
 
 	// Scene initialisation. This function is only run once, at the very beginning.
 	function init()
 	{
 		initCameraAndScene();
+
+
 
 		loadBunny();
 
@@ -82,8 +84,8 @@
 		renderer.setSize(window.innerWidth, window.innerHeight);
 		document.body.appendChild(renderer.domElement);
 
-		//Controls.addMouseHandler(renderer.domElement, orbit, zoomIn, zoomOut);
-		controls = new THREE.OrbitControls( camera, renderer.domElement );
+		Controls.addMouseHandler(renderer.domElement, orbit, zoomIn, zoomOut);
+		//controls = new THREE.OrbitControls( camera, renderer.domElement );
 
 		initGUI();
 
@@ -91,6 +93,31 @@
 
 		// Handle resizing of the browser window.
 		window.addEventListener('resize', handleResize, false);
+	}
+
+	function drag( deltaY, deltaX) {
+
+		deltaX = -deltaX;
+		var centre = new THREE.Vector3();
+		var radPerPixel = (Math.PI / 450),
+				deltaPhi = radPerPixel * deltaX,
+				deltaTheta = radPerPixel * deltaY,
+				pos = camera.position.sub(centre),
+				radius = pos.length(),
+				theta = Math.acos(pos.z / radius),
+				phi = Math.atan2(pos.y, pos.x);
+
+		// Subtract deltaTheta and deltaPhi
+		theta = Math.min(Math.max(theta - deltaTheta, 0), Math.PI);
+		phi -= deltaPhi;
+
+		// Turn back into Cartesian coordinates
+		pos.x = (radius * Math.sin(theta) * Math.cos(phi));
+		pos.y = (radius * Math.sin(theta) * Math.sin(phi));
+		pos.z = (radius * Math.cos(theta));
+
+		camera.position.add(centre);
+		camera.lookAt(centre);
 	}
 
 	function initGUI()
@@ -103,7 +130,9 @@
 
 		const cubeFolder = gui.addFolder("Cube");
 		var onlyFaces = {add: function(){renderCube()}};
-		cubeFolder.add(onlyFaces, "add").name("Only Faces");
+		cubeFolder.add(onlyFaces, "add").name("Only Faces(Not affected by lighting)");
+		onlyFaces = {add: function(){renderCubeLighting()}};
+		cubeFolder.add(onlyFaces, "add").name("Only Faces(Affected by lighting)");
 		var onlyVertices = {add: function(){renderCubeJustVertices();}};
 		cubeFolder.add(onlyVertices, "add").name("Only Vertices");
 		var onlyEdges = {add: function(){renderCubeJustEdges()}};
@@ -157,12 +186,17 @@
 
 	function zoomIn(scale)
 	{
-		camera.translateZ(-scale);
+		console.log("told to zoom in");
+		camera.translateZ(scale);
 	}
 
 	function zoomOut(scale)
 	{
-		camera.translateZ(scale);
+		console.log("told to zoom out");
+		if(camera.position.z - scale > 0)
+		{
+			camera.translateZ(scale);
+		}
 	}
 
 	function initCameraAndScene()
@@ -276,6 +310,15 @@
 		scene.add(mesh);
 	}
 
+	function renderCubeLighting()
+	{
+		scene.remove(mesh);
+		// Faces naturally render when you add the material
+		const material = new THREE.MeshLambertMaterial({color: 0xFFFFFF});
+		mesh = new THREE.Mesh(geometry, material);
+		scene.add(mesh);
+	}
+
 	function renderBunny()
 	{
 		scene.remove(bunnyMesh);
@@ -310,7 +353,7 @@
 
 		// Adding a material to make the vertices visible
 		// Points material only shows the points which in our case are 8 vertices
-		const bunnyMaterial = new THREE.PointsMaterial({color: 0x00ff00, size: 0.01});
+		const bunnyMaterial = new THREE.PointsMaterial({color: 0x0120FF, size: 0.01});
 		bunnyMesh = new THREE.Points(bunnyObject.children[0].geometry, bunnyMaterial);
 		// Adjust scale
 		bunnyMesh.scale.set(0.4, 0.4, 0.4);
@@ -465,9 +508,11 @@
 		loadOBJMTLModel('http://localhost:8000/models/luffy/','luffy.obj', 'luffy.mtl',  new THREE.Vector3(0.02, 0.02, 0.02),  new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(-5, 0.5, -16)), new THREE.Vector3(0*Math.PI/180, 45*Math.PI/180, 0*Math.PI/180));
 		// Load Chopper under the tent
 		loadOBJMTLModel('http://localhost:8000/models/chopper/','chopper.obj', 'chopper.mtl',  new THREE.Vector3(0.02, 0.02, 0.02),  new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(6, 0.8, -10)), new THREE.Vector3(0*Math.PI/180, 5*Math.PI/180, 0*Math.PI/180));
-		// Load nami
+		// Load Nami on top of tower
 		loadGLTFModel('http://localhost:8000/models/nami/scene.gltf', new THREE.Vector3(7, 7, 7), new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(-3, 8, -17)), new THREE.Vector3(0*Math.PI/180, 45*Math.PI/180, 0*Math.PI/180));
+		// Load Usopp on top of the barrel
 		loadGLTFModel('http://localhost:8000/models/usopp/scene.gltf' , new THREE.Vector3(1.25, 1.25, 1.25) , (new THREE.Vector3(0,0,0)).addVectors(translationVector, new THREE.Vector3(3.5, 3.9, -14.5)), null);
+		// Load Sanji on top of the tower
 		loadGLTFModel('http://localhost:8000/models/sanji/scene.gltf' , new THREE.Vector3(0.015, 0.015, 0.015) , new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(0, 8, -19)), new THREE.Vector3(0*Math.PI/180, -45*Math.PI/180, 0*Math.PI/180));
 	}
 
@@ -705,6 +750,17 @@
 	{
 		requestAnimationFrame(animate);
 
+		if(otherShipMesh!=null)
+		{
+			moveOtherShip(otherShipSpeed, otherShipBound);
+		}
+
+		//controls.update();
+		stats.update();
+
+		// Render the current scene to the screen.
+		renderer.render(scene, camera);
+
 		// TO DO: This is a good place for code that rotates your cube (requirement 3).
 		/*
 		mesh.rotation.x += 0.001;
@@ -713,17 +769,7 @@
 		orbit(0.0005, 0);
 
 		 */
-		if(otherShipMesh!=null)
-		{
-			moveOtherShip(otherShipSpeed, otherShipBound);
-		}
 
-
-		controls.update();
-		stats.update();
-
-		// Render the current scene to the screen.
-		renderer.render(scene, camera);
 	}
 
 	function moveShip(x, yAngle)
@@ -871,34 +917,84 @@
 		}
 	}
 
-	function orbit(angleY, angleX)
+	function orbit(deltaX, deltaY)
 	{
-		angleX = -angleX;
-
-		angleX *= Math.PI/450;
-		angleY *= Math.PI/450;
+		deltaX *= 0.01;
+		deltaY *= 0.01;
 
 		var center = new THREE.Vector3();
 		var radius, phi, theta;
 		var pos = camera.position;
 		// Convert current camera position to spherical coordinates
 		radius = pos.length();
-		phi = Math.atan2(pos.y, pos.x); // corresponds to the angle between x axis and radius line
-		theta = Math.acos(pos.z / radius); // corresponds to the angle between y axis and radius line
+		phi = Math.atan(pos.x / pos.z);
+		theta = Math.acos(pos.y / radius);
 
 		// Subtract angles to mimic translation in an orbit manner
-		phi -= angleX;
-		theta = Math.min(Math.max(theta - angleY, 0), Math.PI);
+		phi -= deltaX;
+		theta -= deltaY;
 
-		// Convert the spherical to cartesian coordinates
-		pos.x = radius * Math.sin(theta) * Math.cos(phi);
-		pos.y = radius * Math.sin(theta) * Math.sin(phi);
-		pos.z = radius * Math.cos(theta);
+		// Need to check the sign of the z coordinate to invert the positions accordingly
+		if(pos.z < 0)
+		{
+			// Convert the spherical to cartesian coordinates
+			camera.position.x = -radius * Math.sin(theta) * Math.sin(phi);
+			camera.position.y = radius * Math.cos(theta);
+			camera.position.z = -radius * Math.sin(theta) * Math.cos(phi);
+		}
+		else
+		{
+			// Convert the spherical to cartesian coordinates
+			camera.position.x = radius * Math.sin(theta) * Math.sin(phi);
+			camera.position.y = radius * Math.cos(theta);
+			camera.position.z = radius * Math.sin(theta) * Math.cos(phi);
+		}
 
-		camera.position.add(center);
 		camera.lookAt(center);
 	}
+/*
+	function mouseDownHandler(event)
+	{
+		// Get x and y position when mouse is pressed down
+		startXPosition = event.offsetX;
+		startXPosition = event.offsetX;
+		mouseDown = true;
+		console.log("Mouse Down");
 
+	}
+
+	function mouseUpHandler()
+	{
+		mouseDown = false;
+		console.log("Mouse Up");
+	}
+
+	// Every move updates the orbit
+	function mouseMoveHandler(event)
+	{
+		console.log("Mouse Moving");
+
+		// If the event does not get explicitly handles, default action should not be taken
+		event.preventDefault();
+		// If mouse is not down don't need to worry about the movement
+		if(!mouseDown) return;
+		console.log("start position is not null")
+		// Choice for orbiting camera scalar
+		const scalar = 0.001;
+		// Get how much the mouse has moved in the x and y axis
+		var deltaX, deltaY;
+		deltaX = (startXPosition - event.offsetX) * scalar;
+		deltaY = (startYPosition - event.offsetY) * scalar;
+
+		// Trigger orbit
+		orbit(deltaX, deltaY);
+
+		// Update the x and y coordinate
+		startXPosition = event.offsetX;
+		startXPosition = event.offsetX;
+	}
+
+ */
 
 </script>
 </body>

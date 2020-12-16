@@ -19,8 +19,14 @@ Make sure you have either Firefox, Google Chrome or Microsoft Edge installed on 
 * Please allow the website to fully load before you start interacting with it, it will have a lag spike at the beginning after it has loaded but after the website should have a good performance
 
 # Requirements
-## 1
-When you load 
+## 1 and 2
+When you load the website the cube and axis should be loaded already, and should be in camera view.
+## 3
+Press `X` to rotate the cube in the positive x-axis direction, `Y` to rotate the cube in the positive y-axis direction, `Z` to rotate the cube in the positive z-axis direction.
+Pressing and holding any of the buttons animates the rotation in that respective axis.
+## 4
+Press `F` to render faces, `E` to only render edges, `V` to only render the vertices of the cube. Alternatively, using the GUI on the top right, you can select any of the options under the "Cube" header to change the render mode.
+Switching between "Only Faces(Not affected by lighting)" and "Only Faces(Affected by lighting)" highlights the effect light has on the material.
 # Credits
 ## Models
 * `zoro` (3D model of a swordsman in a green costume): https://sketchfab.com/3d-models/3dst40-zoro-from-one-piece-bf6fc34c3d784ff38b5a093b4c423abd
