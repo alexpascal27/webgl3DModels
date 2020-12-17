@@ -803,6 +803,23 @@
 				renderCubeJustVertices();
 				break;
 
+				// Render modes.
+			case 74: // j = bunny face
+				renderBunny();
+				break;
+
+			case 85: // u = bunny edge
+				renderBunnyJustEdges();
+				break;
+
+			case 77: // m = bunny vertex
+				renderBunnyJustVertices();
+				break;
+
+			case 84: // t = render textures for cube
+				renderCubeTexturesNoLighting();
+				break
+
 				// TO DO: add code for starting/stopping rotations (requirement 3).
 			case 88: // x = trigger rotating cube about x axis
 				mesh.rotation.x += 0.01;
@@ -850,31 +867,29 @@
 				lookAtPoint.x += 1;
 				break;
 
-			case 87: // w = camera forward
+			case 73: // i = camera forward
 				zoomIn(1);
 				break;
 
-			case 83: // s = camera backwards
+			case 75: // k = camera backwards
 				zoomOut(1);
 				break;
 
-			case 73: //i = move ship forward
+			case 87: //w = move ship forward
 				moveShip(-1, null);
 				break;
 
-			case 74: //j = rotate ship left
+			case 65: //a = rotate ship left
 				moveShip(null, 15*Math.PI/180);
 				break;
 
-			case 75: //k = move ship backward
+			case 83: //s = move ship backward
 				moveShip(1, null);
 				break;
 
-			case 76: //l = move ship right
+			case 68: //d = move ship right
 				moveShip(null, -15*Math.PI/180);
 				break;
-
-
 		}
 	}
 

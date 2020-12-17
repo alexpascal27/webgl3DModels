@@ -43,7 +43,7 @@ Alternatively, selecting an option with "Textures On" under the "Cube" header in
 ##8
 The bunny mesh is loaded and rendered when the website loads. To view the bunny, render the cube in the vertex or edge mode (either by pressing the `V` or `E` key, or by selecting the render option under the "Cube" header in the GUI menu).
 ##9 (Non-rotation)
-Press `G` to render faces, `R` to only render edges, `B` to only render the vertices of the bunny.
+Press `J` to render faces, `U` to only render edges, `M` to only render the vertices of the bunny.
 
 Alternatively, using the GUI on the top right, you can select render options under the "Bunny" header to change the render mode.
 
@@ -51,7 +51,7 @@ Use the GUI option "Faces Affected by lighting" under the "Bunny" header to chan
 ##10
 The scene is loaded, when the website loads, next to the cube. Zoom out and orbit around to explore the details and models. 
 
-You can toggle the campfire light by selecting the "Click to the toggle campfire light!" option from the GUI menu. 
+To showcase lighting and shadows I implemented a point light. I thought the most natural way for the point light to be in the scene is for it to be the light for the 'campfire'. All models showcase lighting but trees and the moving ship are especially interesting. The trees show how light behaves on uneven surfaces. The moving ship displays the dynamic shadows and ligthing. You can toggle the campfire light by selecting the "Click to the toggle campfire light!" option from the GUI menu. 
 
 You can spawn a dolphin object in a random location (a few unit away from the camp and cube) by selecting the "Click to randomly spawn a dolphin!" option from the GUI menu. 
 
