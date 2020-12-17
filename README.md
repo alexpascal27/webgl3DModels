@@ -21,12 +21,46 @@ Make sure you have either Firefox, Google Chrome or Microsoft Edge installed on 
 # Requirements
 ## 1 and 2
 When you load the website the cube and axis should be loaded already, and should be in camera view.
-## 3
-Press `X` to rotate the cube in the positive x-axis direction, `Y` to rotate the cube in the positive y-axis direction, `Z` to rotate the cube in the positive z-axis direction.
-Pressing and holding any of the buttons animates the rotation in that respective axis.
+## 3 and Rotation Functionality of 9
+Press `X` to rotate the cube and bunny in the positive x-axis direction, `Y` to rotate the cube and bunny in the positive y-axis direction, `Z` to rotate the cube and bunny in the positive z-axis direction.
+Pressing and holding any of the buttons animates the rotation in that respective axis. Press `R` to reset the rotation in all axis. 
+
+It must be noted that the cube and bunny rotate at the same speed and in the same direction
 ## 4
-Press `F` to render faces, `E` to only render edges, `V` to only render the vertices of the cube. Alternatively, using the GUI on the top right, you can select any of the options under the "Cube" header to change the render mode.
-Switching between "Only Faces(Not affected by lighting)" and "Only Faces(Affected by lighting)" highlights the effect light has on the material.
+Press `F` to render faces, `E` to only render edges, `V` to only render the vertices of the cube. 
+
+Alternatively, using the GUI on the top right, you can  select render options under the "Cube" header to change the render mode.
+##5
+Use the arrow keys to move the camera up, down, left and right. Press `I` to move the camera forward and `K` to move the camera backward. 
+
+Alternatively, you use the GUI menu options under the "Camera" header to change the camera position. 
+##6
+Click and drag the mouse to move the camera. 
+##7
+Press `T` to render the textures. 
+
+Alternatively, selecting an option with "Textures On" under the "Cube" header in the GUI menu.
+##8
+The bunny mesh is loaded and rendered when the website loads. To view the bunny, render the cube in the vertex or edge mode (either by pressing the `V` or `E` key, or by selecting the render option under the "Cube" header in the GUI menu).
+##9 (Non-rotation)
+Press `G` to render faces, `R` to only render edges, `B` to only render the vertices of the bunny.
+
+Alternatively, using the GUI on the top right, you can select render options under the "Bunny" header to change the render mode.
+
+Use the GUI option "Faces Affected by lighting" under the "Bunny" header to change the materials, lighting and shading. It uses non-flat shading and Phong lighting.
+##10
+The scene is loaded, when the website loads, next to the cube. Zoom out and orbit around to explore the details and models. 
+
+You can toggle the campfire light by selecting the "Click to the toggle campfire light!" option from the GUI menu. 
+
+You can spawn a dolphin object in a random location (a few unit away from the camp and cube) by selecting the "Click to randomly spawn a dolphin!" option from the GUI menu. 
+
+In the background of the scene there is a ship that is moving on its own. You can use options under the "Moving Ship" header in the GUI menu to change the speed of the moving ship and change how far it goes till it rotates back. 
+
+The ship next to island is controllable. Use the keys `W` to move the ship forward, `S` to move the ship backward, and the `A` and `D` keys to rotate the ship to turn left and right respectively.
+
+On the top left, you can see your frames per second statistics. You can close the GUI by choosing the "Close Controls" option in the GUI menu. The GUI can be reopened by selecting the "Open Controls" option in the GUI menu (top right).
+
 # Credits
 ## Models
 * `zoro` (3D model of a swordsman in a green costume): https://sketchfab.com/3d-models/3dst40-zoro-from-one-piece-bf6fc34c3d784ff38b5a093b4c423abd

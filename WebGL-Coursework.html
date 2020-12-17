@@ -13,7 +13,6 @@
 <script src="three.js"></script>
 <script src="OBJloader.js"></script>
 <script src="scripts/controls.js"></script>
-<script src="scripts/OrbitControls.js"></script>
 <script type="module">
 	"use strict"; // https://stackoverflow.com/q/1335851/72470
 	import {MTLLoader} from 'http://localhost:8000/scripts/MTLLoader.js';
@@ -28,6 +27,8 @@
 	var camera, scene, renderer, mesh;
 	// Bunny variables
 	var geometry, bunnyObject, bunnyMesh = new THREE.Mesh(new THREE.Geometry(), null);
+	// Orbit controls
+	var lookAtPoint;
 	// Ship Mesh
 	var shipMesh, otherShipMesh, otherShipBound = 150, otherShipSpeed = 0.05;
 	// Lighting
@@ -48,15 +49,12 @@
 	//document.addEventListener("mousemove", mouseMoveHandler);
 	//document.addEventListener("mouseup", mouseUpHandler);
 
-
 	// Scene initialisation. This function is only run once, at the very beginning.
 	function init()
 	{
 		initCameraAndScene();
 
-
-
-		loadBunny();
+		loadAndRenderBunny();
 
 		// TO DO: Draw a cube (requirement 1).
 		initCubeGeometry();
@@ -85,7 +83,6 @@
 		document.body.appendChild(renderer.domElement);
 
 		Controls.addMouseHandler(renderer.domElement, orbit, zoomIn, zoomOut);
-		//controls = new THREE.OrbitControls( camera, renderer.domElement );
 
 		initGUI();
 
@@ -93,31 +90,6 @@
 
 		// Handle resizing of the browser window.
 		window.addEventListener('resize', handleResize, false);
-	}
-
-	function drag( deltaY, deltaX) {
-
-		deltaX = -deltaX;
-		var centre = new THREE.Vector3();
-		var radPerPixel = (Math.PI / 450),
-				deltaPhi = radPerPixel * deltaX,
-				deltaTheta = radPerPixel * deltaY,
-				pos = camera.position.sub(centre),
-				radius = pos.length(),
-				theta = Math.acos(pos.z / radius),
-				phi = Math.atan2(pos.y, pos.x);
-
-		// Subtract deltaTheta and deltaPhi
-		theta = Math.min(Math.max(theta - deltaTheta, 0), Math.PI);
-		phi -= deltaPhi;
-
-		// Turn back into Cartesian coordinates
-		pos.x = (radius * Math.sin(theta) * Math.cos(phi));
-		pos.y = (radius * Math.sin(theta) * Math.sin(phi));
-		pos.z = (radius * Math.cos(theta));
-
-		camera.position.add(centre);
-		camera.lookAt(centre);
 	}
 
 	function initGUI()
@@ -130,9 +102,7 @@
 
 		const cubeFolder = gui.addFolder("Cube");
 		var onlyFaces = {add: function(){renderCube()}};
-		cubeFolder.add(onlyFaces, "add").name("Only Faces(Not affected by lighting)");
-		onlyFaces = {add: function(){renderCubeLighting()}};
-		cubeFolder.add(onlyFaces, "add").name("Only Faces(Affected by lighting)");
+		cubeFolder.add(onlyFaces, "add").name("Only Faces");
 		var onlyVertices = {add: function(){renderCubeJustVertices();}};
 		cubeFolder.add(onlyVertices, "add").name("Only Vertices");
 		var onlyEdges = {add: function(){renderCubeJustEdges()}};
@@ -155,9 +125,30 @@
 		bunnyFolder.open();
 
 		const cameraFolder = gui.addFolder("Camera");
-		cameraFolder.add(camera.position, "x", -100, 100, 1);
-		cameraFolder.add(camera.position, "y", -100, 100, 1);
-		cameraFolder.add(camera.position, "z", -100, 100, 1);
+		var placeholderVariable = {add: function(){
+			camera.position.y += 1;
+			lookAtPoint.y += 1;
+		}};
+		cameraFolder.add(placeholderVariable, "add").name("Move Up");
+		placeholderVariable = {add: function(){
+				camera.position.x += -1;
+				lookAtPoint.x += -1;
+		}};
+		cameraFolder.add(placeholderVariable, "add").name("Move Left");
+		placeholderVariable = {add: function(){
+				camera.position.x += 1;
+				lookAtPoint.x += 1;
+			}};
+		cameraFolder.add(placeholderVariable, "add").name("Move Right");
+		placeholderVariable = {add: function(){
+				camera.position.y += -1;
+				lookAtPoint.y += -1;
+			}};
+		cameraFolder.add(placeholderVariable, "add").name("Move Down");
+		placeholderVariable = {add: function(){zoomIn(1)}};
+		cameraFolder.add(placeholderVariable, "add").name("Zoom In");
+		placeholderVariable = {add: function(){zoomOut(1)}};
+		cameraFolder.add(placeholderVariable, "add").name("Zoom Out");
 		cameraFolder.open();
 
 		const movingShipFolder = gui.addFolder("Moving Ship");
@@ -181,22 +172,20 @@
 				else otherShipBound = 150;
 			}};
 		movingShipFolder.add(changeBoatBound, "toggle").name("Increase Max Bound");
-
 	}
 
 	function zoomIn(scale)
 	{
-		console.log("told to zoom in");
-		camera.translateZ(scale);
+		if(camera.position.z - scale > 0)
+		{
+			camera.translateZ(-scale);
+		}
+
 	}
 
 	function zoomOut(scale)
 	{
-		console.log("told to zoom out");
-		if(camera.position.z - scale > 0)
-		{
-			camera.translateZ(scale);
-		}
+		camera.translateZ(scale);
 	}
 
 	function initCameraAndScene()
@@ -206,7 +195,8 @@
 		// Set up the camera, move it to (3, 4, 5) and look at the origin (0, 0, 0).
 		camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
 		camera.position.set(3, 4, 5);
-		camera.lookAt(new THREE.Vector3(0, 0, 0));
+		lookAtPoint = new THREE.Vector3(0, 0, 0);
+		camera.lookAt(lookAtPoint);
 
 		// Draw a helper grid in the x-z plane (note: y is up).
 		scene.add(new THREE.GridHelper(10, 20, 0xffffff));
@@ -292,7 +282,6 @@
 		 */
 	}
 
-
 	// Handle resizing of the browser window.
 	function handleResize()
 	{
@@ -306,15 +295,6 @@
 		scene.remove(mesh);
 		// Faces naturally render when you add the material
 		const material = new THREE.MeshBasicMaterial({color: 0x0120FF});
-		mesh = new THREE.Mesh(geometry, material);
-		scene.add(mesh);
-	}
-
-	function renderCubeLighting()
-	{
-		scene.remove(mesh);
-		// Faces naturally render when you add the material
-		const material = new THREE.MeshLambertMaterial({color: 0xFFFFFF});
 		mesh = new THREE.Mesh(geometry, material);
 		scene.add(mesh);
 	}
@@ -395,7 +375,7 @@
 		scene.add(bunnyMesh);
 	}
 
-	function loadBunny()
+	function loadAndRenderBunny()
 	{
 		const loader = new THREE.OBJLoader();
 		// load a resource
@@ -405,7 +385,13 @@
 				// called when resource is loaded
 				function ( object ) {
 					bunnyObject = object;
-					bunnyMesh = object;
+
+					const material = new THREE.MeshBasicMaterial({color: 0x0120FF});
+					bunnyMesh = new THREE.Mesh(bunnyObject.children[0].geometry, material);
+					// Adjust scale
+					bunnyMesh.scale.set(0.4, 0.4, 0.4);
+					bunnyMesh.translateX(-0.4);
+					scene.add(bunnyMesh);
 				},
 				// called when loading is in progresses
 				function ( xhr ) {
@@ -792,6 +778,7 @@
 			otherShipMesh.rotateY(Math.PI);
 			otherShipMesh.translateZ(-30);
 		}
+		// If still in bounds, carry on moving
 		else
 		{
 			otherShipMesh.translateZ(-z);
@@ -806,7 +793,6 @@
 				// Render modes.
 			case 70: // f = face
 				renderCube();
-				//for(mesh.)
 				break;
 
 			case 69: // e = edge
@@ -845,19 +831,23 @@
 				break;
 
 			case 38: // arrow up
-				camera.translateY(1);
+				camera.position.y += 1;
+				lookAtPoint.y += 1;
 				break;
 
 			case 40: // arrow down
-				camera.translateY(-1);
+				camera.position.y += -1
+				lookAtPoint.y += -1;
 				break;
 
 			case 37: // arrow left
-				camera.translateX(-1);
+				camera.position.x += -1;
+				lookAtPoint.x += -1;
 				break;
 
 			case 39: // arrow right
-				camera.translateX(1);
+				camera.position.x += 1;
+				lookAtPoint.x += 1;
 				break;
 
 			case 87: // w = camera forward
@@ -867,22 +857,6 @@
 			case 83: // s = camera backwards
 				zoomOut(1);
 				break;
-
-			case 104: // 8 = orbit in the upwards direction
-				orbit(0, 0.01);
-				break;
-
-			case 100: // 4 = orbit in the left direction
-				orbit(-0.01, 0);
-				break;
-
-			case 102: // 6 = orbit in the right direction
-				orbit(0.01, 0.);
-				break;
-
-			case 98: // 2 = orbit in the upwards direction
-				orbit(0, -0.01);
-				break
 
 			case 73: //i = move ship forward
 				moveShip(-1, null);
@@ -899,6 +873,8 @@
 			case 76: //l = move ship right
 				moveShip(null, -15*Math.PI/180);
 				break;
+
+
 		}
 	}
 
@@ -922,11 +898,21 @@
 		deltaX *= 0.01;
 		deltaY *= 0.01;
 
-		var center = new THREE.Vector3();
+
+		//var center = new THREE.Vector3();
 		var radius, phi, theta;
 		var pos = camera.position;
+		pos.sub(lookAtPoint);
 		// Convert current camera position to spherical coordinates
+		/*
+		var x2, y2, z2;
+		x2 = Math.pow(pos.x - lookAtPoint.x ,2);
+		y2 = Math.pow(pos.y - lookAtPoint.y ,2);
+		z2 = Math.pow(pos.z - lookAtPoint.z ,2);
+		radius = Math.sqrt(x2 + y2 + z2);
+		*/
 		radius = pos.length();
+
 		phi = Math.atan(pos.x / pos.z);
 		theta = Math.acos(pos.y / radius);
 
@@ -950,7 +936,10 @@
 			camera.position.z = radius * Math.sin(theta) * Math.cos(phi);
 		}
 
-		camera.lookAt(center);
+		//camera.lookAt(center);
+		camera.position.add(lookAtPoint);
+		camera.lookAt(lookAtPoint);
+		console.log("Looking at: {" + lookAtPoint.x + ", " + lookAtPoint.y + ", " + lookAtPoint.z + "}");
 	}
 /*
 	function mouseDownHandler(event)
