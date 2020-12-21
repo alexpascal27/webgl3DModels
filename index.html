@@ -1,4 +1,4 @@
-﻿
+﻿﻿
 <html lang="en-us">
 <head>
 	<title>One Piece Scene - Alex Zamurca</title>
@@ -25,6 +25,8 @@
 	// Global variables that are available in all functions.
 	// Note: You can add your own here, e.g. to store the rendering mode.
 	var camera, scene, renderer, mesh;
+	// Rotate variables
+	var rotateX = false, rotateY = false, rotateZ = false;
 	// Bunny variables
 	var geometry, bunnyObject, bunnyMesh = new THREE.Mesh(new THREE.Geometry(), null);
 	// Orbit controls
@@ -64,14 +66,14 @@
 		scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 
 		// TO DO: add more complex lighting for 'face' rendering mode (requirement 4).
-		campFireLight = new THREE.PointLight( 0xffff00, 2, 1000000000);
+		campFireLight = new THREE.PointLight( 0xffff00, 2, 50);
 		campFireLight.castShadow = true;
-		campFireLight.position.set( 9, 1, -18 );
+		campFireLight.position.set( 10, 1.5, -18.5 );
 		campFireLight.name = 'campFireLight';
 		scene.add( campFireLight );
 
 		renderGround();
-		loadRequirement10(new THREE.Vector3(10, 0, -10));
+		loadScene(new THREE.Vector3(10, 0, -10));
 
 		// Set up the Web GL renderer.
 		renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -79,7 +81,7 @@
 		renderer.setSize(window.innerWidth, window.innerHeight);
 		document.body.appendChild(renderer.domElement);
 
-		Controls.addMouseHandler(renderer.domElement, orbit, zoomIn, zoomOut);
+		MouseControls.addMouseHandler(renderer.domElement, orbit);
 
 		initGUI();
 
@@ -105,7 +107,7 @@
 		var onlyEdges = {add: function(){renderCubeJustEdges()}};
 		cubeFolder.add(onlyEdges, "add").name("Only Edges");
 		var addTextures = {add: function(){renderCubeTexturesNoLighting()}};
-		cubeFolder.add(addTextures, "add").name("Textures On(Not affected by lighting)");
+		cubeFolder.add(addTextures, "add").name("Textures On(Unaffected by lighting)");
 		addTextures = {add: function(){renderCubeTexturesLighting()}};
 		cubeFolder.add(addTextures, "add").name("Textures On(Affected by lighting)");
 		cubeFolder.open();
@@ -123,14 +125,14 @@
 
 		const cameraFolder = gui.addFolder("Camera");
 		var placeholderVariable = {add: function(){
-			camera.position.y += 1;
-			lookAtPoint.y += 1;
-		}};
+				camera.position.y += 1;
+				lookAtPoint.y += 1;
+			}};
 		cameraFolder.add(placeholderVariable, "add").name("Move Up");
 		placeholderVariable = {add: function(){
 				camera.position.x += -1;
 				lookAtPoint.x += -1;
-		}};
+			}};
 		cameraFolder.add(placeholderVariable, "add").name("Move Left");
 		placeholderVariable = {add: function(){
 				camera.position.x += 1;
@@ -150,9 +152,9 @@
 
 		const movingShipFolder = gui.addFolder("Moving Ship");
 		var changeBoatSpeed = {toggle: function(){
-			if(otherShipSpeed > 0.01) otherShipSpeed -= 0.01;
-			else otherShipSpeed = 0.01;
-		}};
+				if(otherShipSpeed > 0.01) otherShipSpeed -= 0.01;
+				else otherShipSpeed = 0.01;
+			}};
 		movingShipFolder.add(changeBoatSpeed, "toggle").name("Decrease Speed");
 		changeBoatSpeed = {toggle: function(){
 				if(otherShipSpeed < 1) otherShipSpeed += 0.01;
@@ -169,6 +171,7 @@
 				else otherShipBound = 150;
 			}};
 		movingShipFolder.add(changeBoatBound, "toggle").name("Increase Max Bound");
+		movingShipFolder.open();
 	}
 
 	function zoomIn(scale)
@@ -243,40 +246,6 @@
 	{
 		var axisHelper = new THREE.AxesHelper(5);
 		scene.add(axisHelper);
-		/*
-		// Alternative way to draw the xyz axis
-
-		const range = 10;
-
-		// X-Axis which is red
-		const xAxisMaterial = new THREE.LineBasicMaterial({color: 0xFF0000});
-		const xPoints = [];
-		xPoints.push( new THREE.Vector3(0, 0, 0));
-		xPoints.push( new THREE.Vector3(range, 0, 0));
-		const xAxisGeometry = new THREE.BufferGeometry().setFromPoints(xPoints);
-		const xAxisLine = new THREE.Line(xAxisGeometry, xAxisMaterial);
-
-		// Y-Axis which is green
-		const yAxisMaterial = new THREE.LineBasicMaterial({color: 0x00FF00});
-		const yPoints = [];
-		yPoints.push( new THREE.Vector3(0, 0, 0));
-		yPoints.push( new THREE.Vector3(0, range, 0));
-		const yAxisGeometry = new THREE.BufferGeometry().setFromPoints(yPoints);
-		const yAxisLine = new THREE.Line(yAxisGeometry, yAxisMaterial);
-
-		// Z-Axis which is blue
-		const zAxisMaterial = new THREE.LineBasicMaterial({color: 0x0000FF});
-		const zPoints = [];
-		zPoints.push( new THREE.Vector3(0, 0, 0));
-		zPoints.push( new THREE.Vector3(0, 0, range));
-		const zAxisGeometry = new THREE.BufferGeometry().setFromPoints(zPoints);
-		const zAxisLine = new THREE.Line(zAxisGeometry, zAxisMaterial);
-
-		scene.add(xAxisLine);
-		scene.add(yAxisLine);
-		scene.add(zAxisLine);
-
-		 */
 	}
 
 	// Handle resizing of the browser window.
@@ -303,7 +272,7 @@
 		const material = new THREE.MeshBasicMaterial({color: 0x0120FF});
 		bunnyMesh = new THREE.Mesh(bunnyObject.children[0].geometry, material);
 		// Adjust scale
-		bunnyMesh.scale.set(0.4, 0.4, 0.4);
+		bunnyMesh.scale.set(0.3, 0.3, 0.3);
 		bunnyMesh.translateX(-0.4);
 
 		scene.add(bunnyMesh);
@@ -333,7 +302,7 @@
 		const bunnyMaterial = new THREE.PointsMaterial({color: 0x0120FF, size: 0.01});
 		bunnyMesh = new THREE.Points(bunnyObject.children[0].geometry, bunnyMaterial);
 		// Adjust scale
-		bunnyMesh.scale.set(0.4, 0.4, 0.4);
+		bunnyMesh.scale.set(0.3, 0.3, 0.3);
 		bunnyMesh.translateX(-0.4);
 
 		// Add the mesh back in the scene
@@ -365,7 +334,7 @@
 		// Apply material to object
 		bunnyMesh = new THREE.Mesh(bunnyObject.children[0].geometry, material);
 		// Adjust scale
-		bunnyMesh.scale.set(0.4, 0.4, 0.4);
+		bunnyMesh.scale.set(0.3, 0.3, 0.3);
 		bunnyMesh.translateX(-0.4);
 
 		// Add the mesh back in the scene
@@ -386,7 +355,7 @@
 					const material = new THREE.MeshBasicMaterial({color: 0x0120FF});
 					bunnyMesh = new THREE.Mesh(bunnyObject.children[0].geometry, material);
 					// Adjust scale
-					bunnyMesh.scale.set(0.4, 0.4, 0.4);
+					bunnyMesh.scale.set(0.3, 0.3, 0.3);
 					bunnyMesh.translateX(-0.4);
 					scene.add(bunnyMesh);
 				},
@@ -452,7 +421,7 @@
 		const material = new THREE.MeshPhongMaterial({color: 0x0120FF});
 		bunnyMesh = new THREE.Mesh(bunnyObject.children[0].geometry, material);
 		// Adjust scale
-		bunnyMesh.scale.set(0.4, 0.4, 0.4);
+		bunnyMesh.scale.set(0.3, 0.3, 0.3);
 		bunnyMesh.translateX(-0.4);
 
 		scene.add(bunnyMesh);
@@ -477,7 +446,7 @@
 		scene.add(ground);
 	}
 
-	function loadRequirement10(translationVector)
+	function loadScene(translationVector)
 	{
 		loadOBJModel('https://alexzamurca.github.io/webgl3DModels/models/buggy/Buggy.obj','https://alexzamurca.github.io/webgl3DModels/models/buggy/Buggy.jpg', new THREE.Vector3(0.05, 0.05, 0.05), (new THREE.Vector3(0,0,0)).addVectors(translationVector, new THREE.Vector3(5, 0.8, -7)), null);
 		loadOBJModel('https://alexzamurca.github.io/webgl3DModels/models/camp/Camp.obj','https://alexzamurca.github.io/webgl3DModels/models/camp/camp.jpg', new THREE.Vector3(0.005, 0.005, 0.005),  (new THREE.Vector3(0,0,0)).addVectors(translationVector, new THREE.Vector3(5, 1, -2)), null);
@@ -745,14 +714,21 @@
 		renderer.render(scene, camera);
 
 		// TO DO: This is a good place for code that rotates your cube (requirement 3).
-		/*
-		mesh.rotation.x += 0.001;
-		mesh.rotation.y += 0.001;
-		mesh.rotation.z += 0.001;
-		orbit(0.0005, 0);
-
-		 */
-
+		if(rotateX)
+		{
+			mesh.rotation.x += 0.01;
+			if(bunnyMesh!=null) bunnyMesh.rotation.x += 0.01;
+		}
+		if(rotateY)
+		{
+			mesh.rotation.y += 0.01;
+			if(bunnyMesh!=null) bunnyMesh.rotation.y += 0.01;
+		}
+		if(rotateZ)
+		{
+			mesh.rotation.z += 0.01;
+			if(bunnyMesh!=null) bunnyMesh.rotation.z += 0.01;
+		}
 	}
 
 	function moveShip(x, yAngle)
@@ -819,18 +795,15 @@
 
 				// TO DO: add code for starting/stopping rotations (requirement 3).
 			case 88: // x = trigger rotating cube about x axis
-				mesh.rotation.x += 0.01;
-				bunnyMesh.rotation.x += 0.01;
+				rotateX = !rotateX;
 				break;
 
 			case 89: // y = trigger rotating cube about y axis
-				mesh.rotation.y += 0.01;
-				bunnyMesh.rotation.y += 0.01;
-
+				rotateY = !rotateY;
 				break;
+
 			case 90: // z = trigger rotating cube about z axis
-				mesh.rotation.z += 0.01;
-				bunnyMesh.rotation.z += 0.01;
+				rotateZ = !rotateZ;
 				break;
 
 			case 82: // r = reset rotation
@@ -841,7 +814,6 @@
 				bunnyMesh.rotation.x = 0;
 				bunnyMesh.rotation.y = 0;
 				bunnyMesh.rotation.z = 0;
-
 				break;
 
 			case 38: // arrow up
@@ -907,24 +879,15 @@
 
 	function orbit(deltaX, deltaY)
 	{
+		// Applying scalar constant as change in mouse is too big for a smooth camera orbit
 		deltaX *= 0.01;
 		deltaY *= 0.01;
 
-
-		//var center = new THREE.Vector3();
 		var radius, phi, theta;
 		var pos = camera.position;
 		pos.sub(lookAtPoint);
 		// Convert current camera position to spherical coordinates
-		/*
-		var x2, y2, z2;
-		x2 = Math.pow(pos.x - lookAtPoint.x ,2);
-		y2 = Math.pow(pos.y - lookAtPoint.y ,2);
-		z2 = Math.pow(pos.z - lookAtPoint.z ,2);
-		radius = Math.sqrt(x2 + y2 + z2);
-		*/
 		radius = pos.length();
-
 		phi = Math.atan(pos.x / pos.z);
 		theta = Math.acos(pos.y / radius);
 
@@ -948,54 +911,9 @@
 			camera.position.z = radius * Math.sin(theta) * Math.cos(phi);
 		}
 
-		//camera.lookAt(center);
 		camera.position.add(lookAtPoint);
 		camera.lookAt(lookAtPoint);
-		console.log("Looking at: {" + lookAtPoint.x + ", " + lookAtPoint.y + ", " + lookAtPoint.z + "}");
 	}
-/*
-	function mouseDownHandler(event)
-	{
-		// Get x and y position when mouse is pressed down
-		startXPosition = event.offsetX;
-		startXPosition = event.offsetX;
-		mouseDown = true;
-		console.log("Mouse Down");
-
-	}
-
-	function mouseUpHandler()
-	{
-		mouseDown = false;
-		console.log("Mouse Up");
-	}
-
-	// Every move updates the orbit
-	function mouseMoveHandler(event)
-	{
-		console.log("Mouse Moving");
-
-		// If the event does not get explicitly handles, default action should not be taken
-		event.preventDefault();
-		// If mouse is not down don't need to worry about the movement
-		if(!mouseDown) return;
-		console.log("start position is not null")
-		// Choice for orbiting camera scalar
-		const scalar = 0.001;
-		// Get how much the mouse has moved in the x and y axis
-		var deltaX, deltaY;
-		deltaX = (startXPosition - event.offsetX) * scalar;
-		deltaY = (startYPosition - event.offsetY) * scalar;
-
-		// Trigger orbit
-		orbit(deltaX, deltaY);
-
-		// Update the x and y coordinate
-		startXPosition = event.offsetX;
-		startXPosition = event.offsetX;
-	}
-
- */
 
 </script>
 </body>

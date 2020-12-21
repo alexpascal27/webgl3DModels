@@ -1,51 +1,47 @@
-var Controls = (function(Controls) {
+var MouseControls = (function(MouseControls) {
     "use strict";
 
-    // Check for double inclusion
-    if (Controls.addMouseHandler)
-        return Controls;
+    // Check for double inclusion (more than one mouse control)
+    if (MouseControls.addMouseHandler)
+        return MouseControls;
 
-    Controls.addMouseHandler = function (domObject, drag, zoomIn, zoomOut) {
-        var startDragX = null,
-            startDragY = null;
-
-        function mouseWheelHandler(e) {
-            var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
-
-            if (delta < 0 && zoomOut) {
-                zoomOut(delta);
-            } else if (zoomIn) {
-                zoomIn(delta);
-            }
-        }
+    MouseControls.addMouseHandler = function (domObject, orbit) {
+        var previousLocationX = null,
+            previousLocationY = null,
+            isMouseDown = false;
 
         function mouseDownHandler(e) {
-            startDragX = e.clientX;
-            startDragY = e.clientY;
+            // Store location of mouse when its down (so we can work out change in x,y)
+            previousLocationX = e.clientX;
+            previousLocationY = e.clientY;
+            isMouseDown = true;
         }
 
         function mouseMoveHandler(e) {
-            if (startDragX === null || startDragY === null)
+            // If mouse is not down, don't need to orbit
+            if (!isMouseDown)
                 return;
 
-            if (drag)
-                drag( e.clientX - startDragX, e.clientY - startDragY);
+            // Change in X and Y
+            let deltaX = e.clientX - previousLocationX;
+            let deltaY = e.clientY - previousLocationY;
 
-            startDragX = e.clientX;
-            startDragY = e.clientY;
+            if (orbit!=null)
+                orbit(deltaX, deltaY);
+
+            // Update the previous x location to constantly orbit not just after mouse is released
+            previousLocationX = e.clientX;
+            previousLocationY = e.clientY;
         }
 
         function mouseUpHandler(e) {
-            mouseMoveHandler.call(this, e);
-            startDragX = null;
-            startDragY = null;
-
+            // Change the boolean to make sure the orbit doesn't happen unless the mouse is down and dragged
+            isMouseDown = false;
         }
 
-        domObject.addEventListener("mousewheel", mouseWheelHandler);
         domObject.addEventListener("mousedown", mouseDownHandler);
         domObject.addEventListener("mousemove", mouseMoveHandler);
         domObject.addEventListener("mouseup", mouseUpHandler);
     };
-    return Controls;
-}(Controls || {}));
+    return MouseControls;
+}(MouseControls || {}));
