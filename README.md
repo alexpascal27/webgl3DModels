@@ -9,7 +9,7 @@ Alternatively, you use the GUI menu options under the "Camera" header to change 
 Click and drag the mouse to move the camera. 
 
 # Scene
-The scene is loaded, when the website loads, next to the cube. Zoom out and orbit around to explore the details and models. 
+The scene is loaded, when the website loads. Zoom out and orbit around to explore the details and models. 
 
 To showcase lighting and shadows I implemented a point light. I thought the most natural way for the point light to be in the scene is for it to be the light for the 'campfire'. All models showcase lighting but trees and the moving ship are especially interesting. The trees show how light behaves on uneven surfaces. The moving ship displays the dynamic shadows and ligthing. You can toggle the campfire light by selecting the "Click to the toggle campfire light!" option from the GUI menu. 
 
