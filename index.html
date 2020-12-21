@@ -1,9 +1,8 @@
-﻿﻿
-<html lang="en-us">
+﻿<html lang="en-us">
 <head>
 	<title>One Piece Scene - Alex Zamurca</title>
 	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+
 	<style>
 		body { margin: 0; overflow: hidden; }
 		canvas { width: 100%; height: 100%; }
@@ -24,11 +23,7 @@
 
 	// Global variables that are available in all functions.
 	// Note: You can add your own here, e.g. to store the rendering mode.
-	var camera, scene, renderer, mesh;
-	// Rotate variables
-	var rotateX = false, rotateY = false, rotateZ = false;
-	// Bunny variables
-	var geometry, bunnyObject, bunnyMesh = new THREE.Mesh(new THREE.Geometry(), null);
+	var camera, scene, renderer
 	// Orbit controls
 	var lookAtPoint;
 	// Ship Mesh
@@ -52,15 +47,7 @@
 	function init()
 	{
 		initCameraAndScene();
-
-		loadAndRenderBunny();
-
-		// TO DO: Draw a cube (requirement 1).
-		initCubeGeometry();
-		renderCube();
-
-		// TO DO: Visualise the axes of the global coordinate system (requirment 2).
-		initXYZAxis();
+		//initXYZAxis();
 
 		// Basic ambient lighting.
 		scene.add(new THREE.AmbientLight(0xffffff, 0.5));
@@ -68,12 +55,12 @@
 		// TO DO: add more complex lighting for 'face' rendering mode (requirement 4).
 		campFireLight = new THREE.PointLight( 0xffff00, 2, 50);
 		campFireLight.castShadow = true;
-		campFireLight.position.set( 10, 1.5, -18.5 );
+		campFireLight.position.set( 0, 1.5, -8.5 );
 		campFireLight.name = 'campFireLight';
 		scene.add( campFireLight );
 
 		renderGround();
-		loadScene(new THREE.Vector3(10, 0, -10));
+		loadScene(new THREE.Vector3(0, 0, 0));
 
 		// Set up the Web GL renderer.
 		renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -98,30 +85,6 @@
 		gui.add(campFireToggle, "toggle").name("Click to toggle campfire light!");
 		var spawnDolphin = {spawn: function(){spawnRandomDolphin()}};
 		gui.add(spawnDolphin, "spawn").name("Click to randomly spawn a dolphin!");
-
-		const cubeFolder = gui.addFolder("Cube");
-		var onlyFaces = {add: function(){renderCube()}};
-		cubeFolder.add(onlyFaces, "add").name("Only Faces");
-		var onlyVertices = {add: function(){renderCubeJustVertices();}};
-		cubeFolder.add(onlyVertices, "add").name("Only Vertices");
-		var onlyEdges = {add: function(){renderCubeJustEdges()}};
-		cubeFolder.add(onlyEdges, "add").name("Only Edges");
-		var addTextures = {add: function(){renderCubeTexturesNoLighting()}};
-		cubeFolder.add(addTextures, "add").name("Textures On(Unaffected by lighting)");
-		addTextures = {add: function(){renderCubeTexturesLighting()}};
-		cubeFolder.add(addTextures, "add").name("Textures On(Affected by lighting)");
-		cubeFolder.open();
-
-		const bunnyFolder = gui.addFolder("Bunny");
-		onlyFaces = {add: function(){renderBunny()}};
-		bunnyFolder.add(onlyFaces, "add").name("Only Faces");
-		onlyVertices = {add: function(){renderBunnyJustVertices()}};
-		bunnyFolder.add(onlyVertices, "add").name("Only Vertices");
-		onlyEdges = {add: function(){renderBunnyJustEdges()}};
-		bunnyFolder.add(onlyEdges, "add").name("Only Edges");
-		var addTextures = {add: function(){renderBunnyLighting()}};
-		bunnyFolder.add(addTextures, "add").name("Faces Affected by lighting");
-		bunnyFolder.open();
 
 		const cameraFolder = gui.addFolder("Camera");
 		var placeholderVariable = {add: function(){
@@ -197,49 +160,6 @@
 		camera.position.set(3, 4, 5);
 		lookAtPoint = new THREE.Vector3(0, 0, 0);
 		camera.lookAt(lookAtPoint);
-
-		// Draw a helper grid in the x-z plane (note: y is up).
-		scene.add(new THREE.GridHelper(10, 20, 0xffffff));
-	}
-
-	function initCubeGeometry()
-	{
-		// Make a new geometry
-		geometry = new THREE.Geometry();
-		// Adding the corner vertices (8 vertices)
-		geometry.vertices.push(
-				new THREE.Vector3(-1, -1,  1),  // 0
-				new THREE.Vector3( 1, -1,  1),  // 1
-				new THREE.Vector3(-1,  1,  1),  // 2
-				new THREE.Vector3( 1,  1,  1),  // 3
-				new THREE.Vector3(-1, -1, -1),  // 4
-				new THREE.Vector3( 1, -1, -1),  // 5
-				new THREE.Vector3(-1,  1, -1),  // 6
-				new THREE.Vector3( 1,  1, -1),  // 7
-		);
-
-		geometry.faces.push(
-				// front
-				new THREE.Face3(0, 3, 2),
-				new THREE.Face3(0, 1, 3),
-				// right
-				new THREE.Face3(1, 7, 3),
-				new THREE.Face3(1, 5, 7),
-				// back
-				new THREE.Face3(5, 6, 7),
-				new THREE.Face3(5, 4, 6),
-				// left
-				new THREE.Face3(4, 2, 6),
-				new THREE.Face3(4, 0, 2),
-				// top
-				new THREE.Face3(2, 7, 6),
-				new THREE.Face3(2, 3, 7),
-				// bottom
-				new THREE.Face3(4, 1, 0),
-				new THREE.Face3(4, 5, 1),
-		);
-
-
 	}
 
 	function initXYZAxis()
@@ -254,177 +174,6 @@
 		camera.aspect = window.innerWidth / window.innerHeight;
 		camera.updateProjectionMatrix();
 		renderer.setSize(window.innerWidth, window.innerHeight);
-	}
-
-	function renderCube()
-	{
-		scene.remove(mesh);
-		// Faces naturally render when you add the material
-		const material = new THREE.MeshBasicMaterial({color: 0x0120FF});
-		mesh = new THREE.Mesh(geometry, material);
-		scene.add(mesh);
-	}
-
-	function renderBunny()
-	{
-		scene.remove(bunnyMesh);
-		// Faces naturally render when you add the material
-		const material = new THREE.MeshBasicMaterial({color: 0x0120FF});
-		bunnyMesh = new THREE.Mesh(bunnyObject.children[0].geometry, material);
-		// Adjust scale
-		bunnyMesh.scale.set(0.3, 0.3, 0.3);
-		bunnyMesh.translateX(-0.4);
-
-		scene.add(bunnyMesh);
-	}
-
-	function renderCubeJustVertices()
-	{
-		// Remove the current mesh as we need to render a new mesh
-		scene.remove(mesh);
-
-		// Adding a material to make the vertices visible
-		// Points material only shows the points which in our case are 8 vertices
-		const material = new THREE.PointsMaterial({color: 0x00ff00, size: 0.1});
-		mesh = new THREE.Points(geometry, material);
-
-		// Add the mesh back in the scene
-		scene.add(mesh);
-	}
-
-	function renderBunnyJustVertices()
-	{
-		// Remove the current mesh as we need to render a new mesh
-		scene.remove(bunnyMesh);
-
-		// Adding a material to make the vertices visible
-		// Points material only shows the points which in our case are 8 vertices
-		const bunnyMaterial = new THREE.PointsMaterial({color: 0x0120FF, size: 0.01});
-		bunnyMesh = new THREE.Points(bunnyObject.children[0].geometry, bunnyMaterial);
-		// Adjust scale
-		bunnyMesh.scale.set(0.3, 0.3, 0.3);
-		bunnyMesh.translateX(-0.4);
-
-		// Add the mesh back in the scene
-		scene.add(bunnyMesh);
-	}
-
-	function renderCubeJustEdges()
-	{
-		// Remove the current mesh as we need to render a new mesh
-		scene.remove(mesh);
-
-		// Adding a material to make the edges/wireframe visible
-		// The material is told only to show the wireframe of the geometry
-		const material = new THREE.MeshBasicMaterial({color: 0x00ff00, wireframe: true});
-		mesh = new THREE.Mesh(geometry, material);
-
-		// Add the mesh back in the scene
-		scene.add(mesh);
-	}
-
-	function renderBunnyJustEdges()
-	{
-		// Remove the current mesh as we need to render a new mesh
-		scene.remove(bunnyMesh);
-
-		// Adding a material to make the edges/wireframe visible
-		// The material is told only to show the wireframe of the geometry
-		const material = new THREE.MeshBasicMaterial({color: 0x00ff00, wireframe: true});
-		// Apply material to object
-		bunnyMesh = new THREE.Mesh(bunnyObject.children[0].geometry, material);
-		// Adjust scale
-		bunnyMesh.scale.set(0.3, 0.3, 0.3);
-		bunnyMesh.translateX(-0.4);
-
-		// Add the mesh back in the scene
-		scene.add(bunnyMesh);
-	}
-
-	function loadAndRenderBunny()
-	{
-		const loader = new THREE.OBJLoader();
-		// load a resource
-		loader.load(
-				// resource URL
-				'https://alexzamurca.github.io/webgl3DModels/bunny-5000.obj',
-				// called when resource is loaded
-				function ( object ) {
-					bunnyObject = object;
-
-					const material = new THREE.MeshBasicMaterial({color: 0x0120FF});
-					bunnyMesh = new THREE.Mesh(bunnyObject.children[0].geometry, material);
-					// Adjust scale
-					bunnyMesh.scale.set(0.3, 0.3, 0.3);
-					bunnyMesh.translateX(-0.4);
-					scene.add(bunnyMesh);
-				},
-				// called when loading is in progresses
-				function ( xhr ) {
-					console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-				},
-				// called when loading has errors
-				function ( error ) {
-					console.log( 'An error happened' );
-				}
-		);
-	}
-
-	function renderCubeTexturesNoLighting()
-	{
-		scene.remove(mesh);
-
-		const boxGeometry = new THREE.BoxBufferGeometry(2, 2, 2);
-		const loader = new THREE.TextureLoader();
-		const materials = [
-			new THREE.MeshBasicMaterial({map: loader.load('https://res-3.cloudinary.com/crunchbase-production/image/upload/c_lpad,f_auto,q_auto:eco/taqpepcwzincpeytldot')}), //front right
-			new THREE.MeshBasicMaterial({map: loader.load('https://static.wikia.nocookie.net/haikyuu/images/a/a1/Haikyuu_Poster.png/revision/latest/top-crop/width/220/height/220?cb=20140326213635')}), // back left
-			new THREE.MeshBasicMaterial({map: loader.load('https://yt3.ggpht.com/ytc/AAUvwnifzf0a9h5PmkSSSEh_In8dRZasxvcdRpSQ2wM5SA=s900-c-k-c0x00ffffff-no-rj')}), // top
-			new THREE.MeshBasicMaterial({map: loader.load('https://cdn.vox-cdn.com/thumbor/wQooBXM6ZRWVCkdI6W_KgDR1sjc=/0x0:1920x1200/1400x1400/filters:focal(1313x531:1619x837):format(jpeg)/cdn.vox-cdn.com/uploads/chorus_image/image/53947575/reinhammer.0.jpg')}), // bottom
-			new THREE.MeshBasicMaterial({map: loader.load('https://i1.sndcdn.com/artworks-000118414405-0c9zmf-t500x500.jpg')}),// front left
-			new THREE.MeshBasicMaterial({map: loader.load('https://cdn1.i-scmp.com/sites/default/files/styles/768x768/public/images/methode/2018/12/28/f137ab00-0996-11e9-8e9f-24e0f03e43a7_image_hires_175807.jpg?itok=4dAlR0QI&v=1545991093')}), // back right
-		];
-
-		// If we want to apply a single texture change the second parameter to the material variable
-		// Otherwise use materials variable
-		mesh = new THREE.Mesh(boxGeometry, materials);
-
-		scene.add(mesh);
-	}
-
-	function renderCubeTexturesLighting()
-	{
-		scene.remove(mesh);
-
-		const boxGeometry = new THREE.BoxBufferGeometry(2, 2, 2);
-		const loader = new THREE.TextureLoader();
-		const materials = [
-			new THREE.MeshPhongMaterial({map: loader.load('https://res-3.cloudinary.com/crunchbase-production/image/upload/c_lpad,f_auto,q_auto:eco/taqpepcwzincpeytldot')}), //front right
-			new THREE.MeshPhongMaterial({map: loader.load('https://static.wikia.nocookie.net/haikyuu/images/a/a1/Haikyuu_Poster.png/revision/latest/top-crop/width/220/height/220?cb=20140326213635')}), // back left
-			new THREE.MeshPhongMaterial({map: loader.load('https://yt3.ggpht.com/ytc/AAUvwnifzf0a9h5PmkSSSEh_In8dRZasxvcdRpSQ2wM5SA=s900-c-k-c0x00ffffff-no-rj')}), // top
-			new THREE.MeshPhongMaterial({map: loader.load('https://cdn.vox-cdn.com/thumbor/wQooBXM6ZRWVCkdI6W_KgDR1sjc=/0x0:1920x1200/1400x1400/filters:focal(1313x531:1619x837):format(jpeg)/cdn.vox-cdn.com/uploads/chorus_image/image/53947575/reinhammer.0.jpg')}), // bottom
-			new THREE.MeshPhongMaterial({map: loader.load('https://i1.sndcdn.com/artworks-000118414405-0c9zmf-t500x500.jpg')}),// front left
-			new THREE.MeshPhongMaterial({map: loader.load('https://cdn1.i-scmp.com/sites/default/files/styles/768x768/public/images/methode/2018/12/28/f137ab00-0996-11e9-8e9f-24e0f03e43a7_image_hires_175807.jpg?itok=4dAlR0QI&v=1545991093')}), // back right
-		];
-
-		// If we want to apply a single texture change the second parameter to the material variable
-		// Otherwise use materials variable
-		mesh = new THREE.Mesh(boxGeometry, materials);
-
-		scene.add(mesh);
-	}
-
-	function renderBunnyLighting()
-	{
-		scene.remove(bunnyMesh);
-		// Faces naturally render when you add the material
-		const material = new THREE.MeshPhongMaterial({color: 0x0120FF});
-		bunnyMesh = new THREE.Mesh(bunnyObject.children[0].geometry, material);
-		// Adjust scale
-		bunnyMesh.scale.set(0.3, 0.3, 0.3);
-		bunnyMesh.translateX(-0.4);
-
-		scene.add(bunnyMesh);
 	}
 
 	function renderGround()
@@ -707,28 +456,10 @@
 			moveOtherShip(otherShipSpeed, otherShipBound);
 		}
 
-		//controls.update();
 		stats.update();
 
 		// Render the current scene to the screen.
 		renderer.render(scene, camera);
-
-		// TO DO: This is a good place for code that rotates your cube (requirement 3).
-		if(rotateX)
-		{
-			mesh.rotation.x += 0.01;
-			if(bunnyMesh!=null) bunnyMesh.rotation.x += 0.01;
-		}
-		if(rotateY)
-		{
-			mesh.rotation.y += 0.01;
-			if(bunnyMesh!=null) bunnyMesh.rotation.y += 0.01;
-		}
-		if(rotateZ)
-		{
-			mesh.rotation.z += 0.01;
-			if(bunnyMesh!=null) bunnyMesh.rotation.z += 0.01;
-		}
 	}
 
 	function moveShip(x, yAngle)
@@ -763,59 +494,6 @@
 	{
 		switch (event.keyCode)
 		{
-				// Render modes.
-			case 70: // f = face
-				renderCube();
-				break;
-
-			case 69: // e = edge
-				renderCubeJustEdges();
-				break;
-
-			case 86: // v = vertex
-				renderCubeJustVertices();
-				break;
-
-				// Render modes.
-			case 74: // j = bunny face
-				renderBunny();
-				break;
-
-			case 85: // u = bunny edge
-				renderBunnyJustEdges();
-				break;
-
-			case 77: // m = bunny vertex
-				renderBunnyJustVertices();
-				break;
-
-			case 84: // t = render textures for cube
-				renderCubeTexturesNoLighting();
-				break
-
-				// TO DO: add code for starting/stopping rotations (requirement 3).
-			case 88: // x = trigger rotating cube about x axis
-				rotateX = !rotateX;
-				break;
-
-			case 89: // y = trigger rotating cube about y axis
-				rotateY = !rotateY;
-				break;
-
-			case 90: // z = trigger rotating cube about z axis
-				rotateZ = !rotateZ;
-				break;
-
-			case 82: // r = reset rotation
-				mesh.rotation.x = 0;
-				mesh.rotation.y = 0;
-				mesh.rotation.z = 0;
-
-				bunnyMesh.rotation.x = 0;
-				bunnyMesh.rotation.y = 0;
-				bunnyMesh.rotation.z = 0;
-				break;
-
 			case 38: // arrow up
 				camera.position.y += 1;
 				lookAtPoint.y += 1;
