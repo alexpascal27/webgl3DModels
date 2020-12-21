@@ -15,12 +15,12 @@
 <script src="scripts/controls.js"></script>
 <script type="module">
 	"use strict"; // https://stackoverflow.com/q/1335851/72470
-	import {MTLLoader} from 'http://localhost:8000/scripts/MTLLoader.js';
-	import {FBXLoader} from "http://localhost:8000/scripts/FBXLoader.js";
-	import {GLTFLoader} from "http://localhost:8000/scripts/GLTFLoader.js";
-	import {TGALoader} from "http://localhost:8000/scripts/TGALoader.js";
-	import Stats from 'http://localhost:8000/scripts/stats.module.js';
-	import {GUI} from 'http://localhost:8000/scripts/dat.gui.module.js';
+	import {MTLLoader} from 'https://threejsfundamentals.org/threejs/resources/threejs/r122/examples/jsm/loaders/MTLLoader.js';
+	import {FBXLoader} from "https://threejsfundamentals.org/threejs/resources/threejs/r122/examples/jsm/loaders/FBXLoader.js";
+	import {GLTFLoader} from "https://threejsfundamentals.org/threejs/resources/threejs/r122/examples/jsm/loaders/GLTFLoader.js";
+	import {TGALoader} from "https://threejsfundamentals.org/threejs/resources/threejs/r122/examples/jsm/loaders/TGALoader.js";
+	import Stats from 'https://threejsfundamentals.org/threejs/resources/threejs/r122/examples/jsm/libs/stats.module.js';
+	import {GUI} from 'https://threejsfundamentals.org/threejs/resources/threejs/r122/examples/jsm/libs/dat.gui.module.js';
 
 	// Global variables that are available in all functions.
 	// Note: You can add your own here, e.g. to store the rendering mode.
@@ -45,9 +45,6 @@
 	// Listen for keyboard events, to react to them.
 	// Note: there are also other event listeners, e.g. for mouse events.
 	document.addEventListener('keydown', handleKeyDown);
-	//document.addEventListener("mousedown", mouseDownHandler);
-	//document.addEventListener("mousemove", mouseMoveHandler);
-	//document.addEventListener("mouseup", mouseUpHandler);
 
 	// Scene initialisation. This function is only run once, at the very beginning.
 	function init()
@@ -381,7 +378,7 @@
 		// load a resource
 		loader.load(
 				// resource URL
-				'http://localhost:8000/bunny-5000.obj',
+				'https://alexzamurca.github.io/webgl3DModels/bunny-5000.obj',
 				// called when resource is loaded
 				function ( object ) {
 					bunnyObject = object;
@@ -467,7 +464,7 @@
 		let groundPlaneGeometry = new THREE.PlaneGeometry(300, 300 , 1, 1);
 
 		var textureLoader = new THREE.TextureLoader();
-		var map = textureLoader.load('http://localhost:8000/textures/water_texture.jpg');
+		var map = textureLoader.load('https://alexzamurca.github.io/webgl3DModels/textures/water_texture.jpg');
 		let material = new THREE.MeshStandardMaterial({map: map});
 
 		let ground = new THREE.Mesh(groundPlaneGeometry, material);
@@ -482,24 +479,24 @@
 
 	function loadRequirement10(translationVector)
 	{
-		loadOBJModel('http://localhost:8000/models/buggy/Buggy.obj','http://localhost:8000/models/buggy/Buggy.jpg', new THREE.Vector3(0.05, 0.05, 0.05), (new THREE.Vector3(0,0,0)).addVectors(translationVector, new THREE.Vector3(5, 0.8, -7)), null);
-		loadOBJModel('http://localhost:8000/models/camp/Camp.obj','http://localhost:8000/models/camp/camp.jpg', new THREE.Vector3(0.005, 0.005, 0.005),  (new THREE.Vector3(0,0,0)).addVectors(translationVector, new THREE.Vector3(5, 1, -2)), null);
-		loadOBJModel('http://localhost:8000/models/dolphin/dolphin_jumping.obj', 'http://localhost:8000/models/dolphin/dolphin-tex.png',  new THREE.Vector3(2, 2, 2), new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(-10, -7, -10)), null);
-		loadOBJMTLModel('http://localhost:8000/models/zoro/','zoro.obj', 'zoro.mtl',  new THREE.Vector3(0.035, 0.035, 0.035),  new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(7, -0.2, -1)), new THREE.Vector3(-90*Math.PI/180, 0*Math.PI/180, 230*Math.PI/180));
+		loadOBJModel('https://alexzamurca.github.io/webgl3DModels/models/buggy/Buggy.obj','https://alexzamurca.github.io/webgl3DModels/models/buggy/Buggy.jpg', new THREE.Vector3(0.05, 0.05, 0.05), (new THREE.Vector3(0,0,0)).addVectors(translationVector, new THREE.Vector3(5, 0.8, -7)), null);
+		loadOBJModel('https://alexzamurca.github.io/webgl3DModels/models/camp/Camp.obj','https://alexzamurca.github.io/webgl3DModels/models/camp/camp.jpg', new THREE.Vector3(0.005, 0.005, 0.005),  (new THREE.Vector3(0,0,0)).addVectors(translationVector, new THREE.Vector3(5, 1, -2)), null);
+		loadOBJModel('https://alexzamurca.github.io/webgl3DModels/models/dolphin/dolphin_jumping.obj', 'https://alexzamurca.github.io/webgl3DModels/models/dolphin/dolphin-tex.png',  new THREE.Vector3(2, 2, 2), new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(-10, -7, -10)), null);
+		loadOBJMTLModel('https://alexzamurca.github.io/webgl3DModels/models/zoro/','zoro.obj', 'zoro.mtl',  new THREE.Vector3(0.035, 0.035, 0.035),  new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(7, -0.2, -1)), new THREE.Vector3(-90*Math.PI/180, 0*Math.PI/180, 230*Math.PI/180));
 		// Load the ship that can be moved
-		loadShip('http://localhost:8000/models/ship/', 'ship.obj', 'ship.mtl',  new THREE.Vector3(1, 1, 1),  new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(10, -1, 6)));
+		loadShip('https://alexzamurca.github.io/webgl3DModels/models/ship/', 'ship.obj', 'ship.mtl',  new THREE.Vector3(1, 1, 1),  new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(10, -1, 6)));
 		// Load tower hut to add to the buildings
-		loadOBJMTLModel('http://localhost:8000/models/tower_hut/','tower.obj', 'tower.mtl',  new THREE.Vector3(1.5, 1.5, 1.5),  new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(-5, -1, -20)), null);
+		loadOBJMTLModel('https://alexzamurca.github.io/webgl3DModels/models/tower_hut/','tower.obj', 'tower.mtl',  new THREE.Vector3(1.5, 1.5, 1.5),  new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(-5, -1, -20)), null);
 		// Load Luffy on deck
-		loadOBJMTLModel('http://localhost:8000/models/luffy/','luffy.obj', 'luffy.mtl',  new THREE.Vector3(0.02, 0.02, 0.02),  new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(-5, 0.5, -16)), new THREE.Vector3(0*Math.PI/180, 45*Math.PI/180, 0*Math.PI/180));
+		loadOBJMTLModel('https://alexzamurca.github.io/webgl3DModels/models/luffy/','luffy.obj', 'luffy.mtl',  new THREE.Vector3(0.02, 0.02, 0.02),  new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(-5, 0.5, -16)), new THREE.Vector3(0*Math.PI/180, 45*Math.PI/180, 0*Math.PI/180));
 		// Load Chopper under the tent
-		loadOBJMTLModel('http://localhost:8000/models/chopper/','chopper.obj', 'chopper.mtl',  new THREE.Vector3(0.02, 0.02, 0.02),  new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(6, 0.8, -10)), new THREE.Vector3(0*Math.PI/180, 5*Math.PI/180, 0*Math.PI/180));
+		loadOBJMTLModel('https://alexzamurca.github.io/webgl3DModels/models/chopper/','chopper.obj', 'chopper.mtl',  new THREE.Vector3(0.02, 0.02, 0.02),  new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(6, 0.8, -10)), new THREE.Vector3(0*Math.PI/180, 5*Math.PI/180, 0*Math.PI/180));
 		// Load Nami on top of tower
-		loadGLTFModel('http://localhost:8000/models/nami/scene.gltf', new THREE.Vector3(7, 7, 7), new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(-3, 8, -17)), new THREE.Vector3(0*Math.PI/180, 45*Math.PI/180, 0*Math.PI/180));
+		loadGLTFModel('https://alexzamurca.github.io/webgl3DModels/models/nami/scene.gltf', new THREE.Vector3(7, 7, 7), new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(-3, 8, -17)), new THREE.Vector3(0*Math.PI/180, 45*Math.PI/180, 0*Math.PI/180));
 		// Load Usopp on top of the barrel
-		loadGLTFModel('http://localhost:8000/models/usopp/scene.gltf' , new THREE.Vector3(1.25, 1.25, 1.25) , (new THREE.Vector3(0,0,0)).addVectors(translationVector, new THREE.Vector3(3.5, 3.9, -14.5)), null);
+		loadGLTFModel('https://alexzamurca.github.io/webgl3DModels/models/usopp/scene.gltf' , new THREE.Vector3(1.25, 1.25, 1.25) , (new THREE.Vector3(0,0,0)).addVectors(translationVector, new THREE.Vector3(3.5, 3.9, -14.5)), null);
 		// Load Sanji on top of the tower
-		loadGLTFModel('http://localhost:8000/models/sanji/scene.gltf' , new THREE.Vector3(0.015, 0.015, 0.015) , new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(0, 8, -19)), new THREE.Vector3(0*Math.PI/180, -45*Math.PI/180, 0*Math.PI/180));
+		loadGLTFModel('https://alexzamurca.github.io/webgl3DModels/models/sanji/scene.gltf' , new THREE.Vector3(0.015, 0.015, 0.015) , new THREE.Vector3().addVectors(translationVector, new THREE.Vector3(0, 8, -19)), new THREE.Vector3(0*Math.PI/180, -45*Math.PI/180, 0*Math.PI/180));
 	}
 
 	function loadOBJModel(url, textureUrl, scaleVector, translateVector, rotateVector)
@@ -707,7 +704,7 @@
 
 	function renderMovingShip()
 	{
-		loadOtherShip('http://localhost:8000/models/endurance_ship/source/Endurance_LowPoly.fbx', new THREE.Vector3(0.05, 0.05, 0.05), new THREE.Vector3(50, -1, -30), null);
+		loadOtherShip('https://alexzamurca.github.io/webgl3DModels/models/endurance_ship/source/Endurance_LowPoly.fbx', new THREE.Vector3(0.05, 0.05, 0.05), new THREE.Vector3(50, -1, -30), null);
 	}
 
 	function spawnRandomDolphin()
@@ -722,7 +719,7 @@
 		while(randomZPosition < 20 && randomZPosition > -20){
 			randomZPosition = getRandomInteger(-140, 140);
 		}
-		loadOBJModel('http://localhost:8000/models/dolphin/dolphin_jumping.obj', 'http://localhost:8000/models/dolphin/dolphin-tex.png',  new THREE.Vector3(2, 2, 2), new THREE.Vector3(randomXPosition, -6, randomZPosition), new THREE.Vector3(0, randomYAngle, 0));
+		loadOBJModel('https://alexzamurca.github.io/webgl3DModels/models/dolphin/dolphin_jumping.obj', 'https://alexzamurca.github.io/webgl3DModels/models/dolphin/dolphin-tex.png',  new THREE.Vector3(2, 2, 2), new THREE.Vector3(randomXPosition, -6, randomZPosition), new THREE.Vector3(0, randomYAngle, 0));
 
 	}
 
