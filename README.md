@@ -1,3 +1,6 @@
+# One Piece Scene using WebGL (ThreeJS)
+## Demo
+![WebGL Demo](https://i.ibb.co/74jpktt/webgl-demo.gif)
 ## Notes
 * Please allow the website to fully load before you start interacting with it, it will have a lag spike at the beginning after it has loaded but after the website should have a good performance
 
